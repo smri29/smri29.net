@@ -1,83 +1,119 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
-
-// Note: As we build About, Skills, Projects, etc., we will import them here.
+import About from '../components/About';
+import Skills from '../components/Skills';
+import Contact from '../components/Contact';
+import API from '../api/axios';
 
 const Home = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await API.get('/data/projects');
+        setData(data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const renderGroup = (items, subCat) => {
+    const filtered = items.filter(item => item.subCategory === subCat);
+    if (filtered.length === 0) return null;
+
+    return (
+      <div className="mb-12">
+        <h4 className="text-neon-pink text-xs uppercase tracking-[0.2em] mb-6 font-bold border-l-2 border-neon-pink pl-4">
+          {subCat}
+        </h4>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filtered.map((item) => (
+            <div key={item._id} className="glass-card p-6 border border-white/5 hover:border-neon-pink/30 transition-all flex flex-col justify-between group">
+              <div>
+                <h5 className="text-xl font-bold text-white group-hover:text-neon-pink transition-colors">
+                  {item.title}
+                </h5>
+                <p className="text-gray-400 text-sm mt-3 line-clamp-3 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+              <div className="flex gap-4 mt-6">
+                {item.liveLink && (
+                  <a href={item.liveLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-neon-pink hover:underline">
+                    {item.category === 'Research Paper' ? 'Read Paper' : 'Live Demo'}
+                  </a>
+                )}
+                {item.repoLink && (
+                  <a href={item.repoLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-gray-500 hover:text-white">GitHub</a>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const publications = data.filter(i => i.category === 'Research Paper');
+  const projects = data.filter(i => i.category === 'Development');
+  const certifications = data.filter(i => i.category === 'Certification');
+
   return (
-    <div className="bg-dark-bg min-h-screen selection:bg-neon-pink selection:text-white">
-      {/* Fixed Navigation */}
+    <div className="bg-dark-bg min-h-screen selection:bg-neon-pink selection:text-white overflow-x-hidden text-white">
       <Navbar />
 
-      {/* --- Global Background Elements --- */}
-      {/* Top Left Glow */}
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-neon-pink/10 blur-[120px] rounded-full animate-pulse-slow -z-0"></div>
-      
-      {/* Bottom Right Glow */}
       <div className="fixed bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/5 blur-[100px] rounded-full -z-0"></div>
 
-      {/* --- Main Content Sections --- */}
       <main className="relative z-10">
-        
-        {/* Hero Section */}
         <Hero />
+        <About />
+        <Skills />
 
-        {/* About Section Placeholder */}
-        <section id="about" className="min-h-screen py-20 px-6 flex items-center justify-center border-t border-white/5">
-           <div className="glass-card p-12 max-w-4xl w-full text-center">
-              <h2 className="text-4xl font-bold mb-6 text-neon-pink">About Me</h2>
-              <p className="text-gray-400 text-lg leading-relaxed">
-                I am a CSE student at IUBAT and an aspiring Machine Learning Engineer. 
-                Currently serving as the Founder & President of CollabCircle.
-              </p>
-           </div>
+        {/* PUBLICATIONS SECTION */}
+        <section id="research" className="py-24 px-6 border-t border-white/5 bg-black/20">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold mb-12">Research <span className="text-neon-pink">Publications</span></h2>
+            {renderGroup(publications, 'Conference')}
+            {renderGroup(publications, 'Journal')}
+          </div>
         </section>
 
-        {/* Skills Section Placeholder */}
-        <section id="skills" className="min-h-screen py-20 px-6 flex flex-col items-center justify-center border-t border-white/5">
-           <h2 className="text-4xl font-bold mb-12">Technical <span className="text-neon-pink">Skills</span></h2>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
-              {/* We will map through your skill categories here later */}
-              <div className="glass-card p-8 text-center hover:border-neon-pink/50 transition-all">
-                <h3 className="text-xl font-bold mb-4">Frontend</h3>
-                <p className="text-gray-400">React, Tailwind CSS, JavaScript</p>
+        {/* PROJECTS SECTION */}
+        <section id="projects" className="py-24 px-6 border-t border-white/5">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold mb-12">Technical <span className="text-neon-pink">Projects</span></h2>
+            {renderGroup(projects, 'AI/ML')}
+            {renderGroup(projects, 'MERN')}
+          </div>
+        </section>
+
+        {/* CERTIFICATIONS SECTION */}
+        <section id="certifications" className="py-24 px-6 border-t border-white/5 bg-black/20">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl font-bold mb-12">Professional <span className="text-neon-pink">Certifications</span></h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                {renderGroup(certifications, 'AI/ML')}
+                {renderGroup(certifications, 'Kaggle')}
               </div>
-              <div className="glass-card p-8 text-center hover:border-neon-pink/50 transition-all">
-                <h3 className="text-xl font-bold mb-4">Backend</h3>
-                <p className="text-gray-400">Node.js, Express, MongoDB</p>
+              <div className="space-y-4">
+                {renderGroup(certifications, 'Research')}
+                {renderGroup(certifications, 'Others')}
               </div>
-              <div className="glass-card p-8 text-center hover:border-neon-pink/50 transition-all">
-                <h3 className="text-xl font-bold mb-4">AI & ML</h3>
-                <p className="text-gray-400">Python, PyTorch, Scikit-Learn</p>
-              </div>
-           </div>
+            </div>
+          </div>
         </section>
 
-        {/* Projects Section Placeholder */}
-        <section id="projects" className="min-h-screen py-20 px-6 border-t border-white/5">
-           <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold">Featured <span className="text-neon-pink">Projects</span></h2>
-           </div>
-           <div className="flex justify-center">
-              <p className="text-gray-500 italic">Project cards will be fetched from the backend...</p>
-           </div>
-        </section>
-
-        {/* Contact Section Placeholder */}
-        <section id="contact" className="py-20 px-6 border-t border-white/5">
-           <div className="max-w-xl mx-auto glass-card p-10 text-center">
-              <h2 className="text-3xl font-bold mb-4">Get In Touch</h2>
-              <p className="text-gray-400 mb-8">Have a question or want to work together?</p>
-              <button className="bg-neon-pink px-10 py-3 rounded-full font-bold">Say Hello</button>
-           </div>
-        </section>
-
+        <Contact />
       </main>
 
-      {/* Footer */}
-      <footer className="py-10 text-center border-t border-white/5 text-gray-600 text-sm">
-        <p>© 2026 Shah Mohammad Rizvi. Built with MERN Stack.</p>
+      <footer className="py-12 text-center border-t border-white/5 bg-black/40 text-gray-500 text-sm">
+        <p>© 2026 Shah Mohammad Rizvi. Built for Professional Outreach.</p>
       </footer>
     </div>
   );
