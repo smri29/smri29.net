@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
 import { Menu, X, Download } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +13,9 @@ const Navbar = () => {
   }, []);
 
   const links = [
+    { name: 'About', to: 'about' },
     { name: 'Skills', to: 'skills' },
+    { name: 'Research', to: 'research' },
     { name: 'Projects', to: 'projects' },
     { name: 'Certifications', to: 'certifications' },
     { name: 'Contact', to: 'contact' }
@@ -30,9 +31,10 @@ const Navbar = () => {
           Shah Mohammad Rizvi
         </div>
 
-        <div className="hidden md:flex gap-8">
+        {/* Desktop Menu */}
+        <div className="hidden lg:flex gap-8">
           {links.map(link => (
-            <Link key={link.to} to={link.to} smooth={true} spy={true} offset={-70} className="text-gray-400 hover:text-neon-pink cursor-pointer transition-colors">
+            <Link key={link.to} to={link.to} smooth={true} spy={true} offset={-70} className="text-gray-400 hover:text-neon-pink cursor-pointer transition-colors text-sm font-medium">
               {link.name}
             </Link>
           ))}
@@ -42,11 +44,32 @@ const Navbar = () => {
           <a href="/resume.pdf" className="hidden md:flex items-center gap-2 px-5 py-2 bg-neon-pink rounded-full text-sm font-bold hover:scale-105 transition-transform">
             <Download size={16} /> Download CV
           </a>
-          <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
+          <button className="lg:hidden" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X /> : <Menu />}
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="absolute top-full left-0 w-full bg-black/95 backdrop-blur-lg border-b border-white/10 p-6 flex flex-col gap-6 lg:hidden">
+            {links.map(link => (
+            <Link 
+                key={link.to} 
+                to={link.to} 
+                smooth={true} 
+                offset={-70} 
+                onClick={() => setIsOpen(false)}
+                className="text-gray-300 text-lg hover:text-neon-pink"
+            >
+              {link.name}
+            </Link>
+          ))}
+           <a href="/resume.pdf" className="flex justify-center items-center gap-2 px-5 py-3 bg-neon-pink rounded-lg text-sm font-bold">
+            <Download size={16} /> Download CV
+          </a>
+        </div>
+      )}
     </nav>
   );
 };

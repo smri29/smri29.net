@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap, Award, BookOpen } from 'lucide-react';
+import meImg from '../assets/me.jpg'; // Import the image
 
 const About = () => {
   const highlights = [
@@ -18,11 +19,14 @@ const About = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             className="relative"
           >
-            {/* Professional Frame for your Headshot */}
-            <div className="aspect-[4/5] glass-card overflow-hidden border-2 border-neon-pink/20 relative z-10">
-               <div className="w-full h-full bg-gray-900 flex items-center justify-center text-gray-500 italic">
-                 [Place your professional headshot here]
-               </div>
+            {/* Professional Frame for Headshot */}
+            <div className="aspect-[4/5] glass-card overflow-hidden border-2 border-neon-pink/20 relative z-10 group">
+               <img 
+                 src={meImg} 
+                 alt="Shah Mohammad Rizvi" 
+                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
             <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-neon-pink/10 -z-0 rounded-2xl"></div>
           </motion.div>
@@ -34,11 +38,11 @@ const About = () => {
             <h2 className="text-sm uppercase tracking-[0.3em] text-neon-pink font-semibold mb-2">Introduction</h2>
             <h3 className="text-4xl font-bold mb-6">Driven by Data, <br/>Defined by <span className="text-neon-pink">Research.</span></h3>
             <p className="text-gray-400 text-lg leading-relaxed mb-8">
-              I am a final-year Computer Science student specializing in **Machine Learning and Deep Learning**. 
+              I am a final-year Computer Science student specializing in <strong>Machine Learning and Deep Learning</strong>. 
               My academic journey is defined by a rigorous 3.82 CGPA and a passion for solving real-world problems 
               through Computer Vision. 
               <br/><br/>
-              As the Founder of **CollabCircle**, I have cultivated a research-driven environment where we 
+              As the Founder of <strong>CollabCircle</strong>, I have cultivated a research-driven environment where we 
               transform complex data into actionable insights. I am currently seeking opportunities to apply my 
               technical skills in a professional engineering team.
             </p>
