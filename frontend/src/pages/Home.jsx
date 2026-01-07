@@ -14,13 +14,11 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch all data in parallel for performance
         const [researchRes, projectRes, certRes] = await Promise.all([
           API.get('/data/research'),
           API.get('/data/projects'),
           API.get('/data/certificates')
         ]);
-
         setResearch(researchRes.data);
         setProjects(projectRes.data);
         setCertificates(certRes.data);
@@ -31,7 +29,6 @@ const Home = () => {
     fetchData();
   }, []);
 
-  // Helper to render Research Papers (Uses 'type' field: Journal/Conference)
   const renderResearch = (items, type) => {
     const filtered = items.filter(item => item.type === type);
     if (filtered.length === 0) return null;
@@ -67,7 +64,6 @@ const Home = () => {
     );
   };
 
-  // Helper to render Projects (Uses 'category' field)
   const renderProjects = (items, category) => {
     const filtered = items.filter(item => item.category === category);
     if (filtered.length === 0) return null;
@@ -108,7 +104,6 @@ const Home = () => {
     );
   };
 
-  // Helper for Certificates
   const renderCerts = (items, category) => {
     const filtered = items.filter(item => item.category === category);
     if (filtered.length === 0) return null;
@@ -136,7 +131,12 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-dark-bg min-h-screen selection:bg-neon-pink selection:text-white overflow-x-hidden text-white">
+    // Added the GRID BACKGROUND directly here on the wrapper div
+    <div className="bg-dark-bg min-h-screen selection:bg-neon-pink selection:text-white overflow-x-hidden text-white relative">
+      
+      {/* GLOBAL BACKGROUND GRID */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none -z-0"></div>
+
       <Navbar />
 
       <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-neon-pink/10 blur-[120px] rounded-full animate-pulse-slow -z-0"></div>
@@ -148,7 +148,7 @@ const Home = () => {
         <Skills />
 
         {/* PUBLICATIONS SECTION */}
-        <section id="research" className="py-24 px-6 border-t border-white/5 bg-black/20">
+        <section id="research" className="py-24 px-6 border-t border-white/5 bg-black/40 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold mb-12">Research <span className="text-neon-pink">Publications</span></h2>
             {renderResearch(research, 'Journal')}
@@ -157,7 +157,7 @@ const Home = () => {
         </section>
 
         {/* PROJECTS SECTION */}
-        <section id="projects" className="py-24 px-6 border-t border-white/5">
+        <section id="projects" className="py-24 px-6 border-t border-white/5 bg-black/20">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold mb-12">Technical <span className="text-neon-pink">Projects</span></h2>
             {renderProjects(projects, 'AI/ML')}
@@ -168,7 +168,7 @@ const Home = () => {
         </section>
 
         {/* CERTIFICATIONS SECTION */}
-        <section id="certifications" className="py-24 px-6 border-t border-white/5 bg-black/20">
+        <section id="certifications" className="py-24 px-6 border-t border-white/5 bg-black/40 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-3xl font-bold mb-12">Professional <span className="text-neon-pink">Certifications</span></h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -187,7 +187,7 @@ const Home = () => {
         <Contact />
       </main>
 
-      <footer className="py-12 text-center border-t border-white/5 bg-black/40 text-gray-500 text-sm">
+      <footer className="py-12 text-center border-t border-white/5 bg-black/80 text-gray-500 text-sm relative z-20">
         <p>© 2026 Shah Mohammad Rizvi. Built for Professional Outreach.</p>
       </footer>
     </div>

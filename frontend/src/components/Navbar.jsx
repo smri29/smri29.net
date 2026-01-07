@@ -41,10 +41,16 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <a href="/resume.pdf" className="hidden md:flex items-center gap-2 px-5 py-2 bg-neon-pink rounded-full text-sm font-bold hover:scale-105 transition-transform">
+          {/* UPDATED: Correct path to /cv.pdf and added 'download' attribute */}
+          <a 
+            href="/cv.pdf" 
+            download="Shah_Mohammad_Rizvi_CV.pdf"
+            className="hidden md:flex items-center gap-2 px-5 py-2 bg-neon-pink rounded-full text-sm font-bold hover:scale-105 transition-transform text-white"
+          >
             <Download size={16} /> Download CV
           </a>
-          <button className="lg:hidden" onClick={() => setIsOpen(!isOpen)}>
+          
+          <button className="lg:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -60,12 +66,17 @@ const Navbar = () => {
                 smooth={true} 
                 offset={-70} 
                 onClick={() => setIsOpen(false)}
-                className="text-gray-300 text-lg hover:text-neon-pink"
+                className="text-gray-300 text-lg hover:text-neon-pink cursor-pointer"
             >
               {link.name}
             </Link>
           ))}
-           <a href="/resume.pdf" className="flex justify-center items-center gap-2 px-5 py-3 bg-neon-pink rounded-lg text-sm font-bold">
+           {/* UPDATED: Correct path here as well */}
+           <a 
+             href="/cv.pdf" 
+             download="Shah_Mohammad_Rizvi_CV.pdf"
+             className="flex justify-center items-center gap-2 px-5 py-3 bg-neon-pink rounded-lg text-sm font-bold text-white"
+            >
             <Download size={16} /> Download CV
           </a>
         </div>
