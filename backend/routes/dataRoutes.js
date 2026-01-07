@@ -1,22 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { 
-  getProjects, addProject, deleteProject, 
-  getResearch, addResearch,
-  sendMessage, getMessages 
-} = require('../controllers/dataController');
 const { chatWithAI } = require('../controllers/aiController');
-// Public Routes (For everyone to see)
+const {
+    getProjects, addProject, updateProject, deleteProject,
+    getResearch, addResearch, updateResearch, deleteResearch,
+    getCertificates, addCertificate, updateCertificate, deleteCertificate,
+    getSkills, updateSkills, deleteSkill,
+    getMessages, sendMessage
+} = require('../controllers/dataController');
+
+// PUBLIC
 router.get('/projects', getProjects);
 router.get('/research', getResearch);
+router.get('/certificates', getCertificates);
+router.get('/skills', getSkills);
 router.post('/contact', sendMessage);
 router.post('/chat', chatWithAI);
 
-// Protected Routes (Only for You - The Admin)
-router.post('/projects', protect, addProject);
-router.delete('/projects/:id', protect, deleteProject);
-router.post('/research', protect, addResearch);
+// ADMIN PROTECTED
+router.route('/research').post(protect, addResearch);
+router.route('/research/:id').put(protect, updateResearch).delete(protect, deleteResearch);
+
+router.route('/projects').post(protect, addProject);
+router.route('/projects/:id').put(protect, updateProject).delete(protect, deleteProject);
+
+router.route('/certificates').post(protect, addCertificate);
+router.route('/certificates/:id').put(protect, updateCertificate).delete(protect, deleteCertificate);
+
+router.route('/skills').post(protect, updateSkills);
+router.route('/skills/:id').delete(protect, deleteSkill);
+
 router.get('/messages', protect, getMessages);
 
 module.exports = router;
