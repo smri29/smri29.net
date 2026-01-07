@@ -4,6 +4,7 @@ import Hero from '../components/Hero';
 import About from '../components/About';
 import Skills from '../components/Skills';
 import Contact from '../components/Contact';
+import ChatWidget from '../components/ChatWidget'; // <--- Imported ChatWidget
 import API from '../api/axios';
 
 const Home = () => {
@@ -131,7 +132,6 @@ const Home = () => {
   };
 
   return (
-    // Added the GRID BACKGROUND directly here on the wrapper div
     <div className="bg-dark-bg min-h-screen selection:bg-neon-pink selection:text-white overflow-x-hidden text-white relative">
       
       {/* GLOBAL BACKGROUND GRID */}
@@ -186,6 +186,9 @@ const Home = () => {
 
         <Contact />
       </main>
+
+      {/* RIZVI AI CHATBOT - Added Here */}
+      <ChatWidget />
 
       <footer className="py-12 text-center border-t border-white/5 bg-black/80 text-gray-500 text-sm relative z-20">
         <p>© 2026 Shah Mohammad Rizvi. Built for Professional Outreach.</p>
