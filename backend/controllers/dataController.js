@@ -14,10 +14,12 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// --- HELPER FOR REUSABLE LOGIC ---
+// --- HELPER: GET ALL (Sorted by Custom Order, then Date) ---
 const getAll = (Model) => async (req, res) => {
   try {
-    const items = await Model.find().sort({ createdAt: -1 });
+    // 1. Sort by 'order' (ascending) first (0, 1, 2...)
+    // 2. Then by 'createdAt' (newest first) as a fallback
+    const items = await Model.find().sort({ order: 1, createdAt: -1 });
     res.json(items);
   } catch (error) { res.status(500).json({ message: error.message }); }
 };
@@ -28,6 +30,39 @@ const deleteItem = (Model) => async (req, res) => {
     if (!item) return res.status(404).json({ message: 'Item not found' });
     res.json({ message: 'Item removed successfully' });
   } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// --- FIX: REORDER LOGIC ---
+exports.reorderItems = async (req, res) => {
+  const { type, items } = req.body; // items = [{ _id: '123', ... }, { _id: '456', ... }]
+  
+  let Model;
+  if (type === 'research') Model = Research;
+  else if (type === 'projects') Model = Project;
+  else if (type === 'certificates') Model = Certificate;
+  else if (type === 'skills') Model = Skill; // <--- ADDED THIS FOR SKILLS
+  
+  if (!Model) return res.status(400).json({ message: "Invalid type for reordering" });
+
+  try {
+    // Efficiently update multiple documents at once
+    const bulkOps = items.map((item, index) => ({
+      updateOne: {
+        filter: { _id: item._id },
+        // CRITICAL FIX: Added $set. Without this, MongoDB ignores the update.
+        update: { $set: { order: index } } 
+      }
+    }));
+
+    if (bulkOps.length > 0) {
+      await Model.bulkWrite(bulkOps);
+    }
+
+    res.json({ success: true, message: "Order updated" });
+  } catch (error) {
+    console.error("Reorder Error:", error);
+    res.status(500).json({ message: error.message });
+  }
 };
 
 // --- RESEARCH ---
@@ -66,7 +101,7 @@ exports.updateCertificate = async (req, res) => {
 };
 exports.deleteCertificate = deleteItem(Certificate);
 
-// --- SKILLS (Special logic: Update if exists, else Create) ---
+// --- SKILLS ---
 exports.getSkills = getAll(Skill);
 exports.updateSkills = async (req, res) => {
   const { category, skillsList } = req.body;
@@ -77,7 +112,7 @@ exports.updateSkills = async (req, res) => {
 };
 exports.deleteSkill = deleteItem(Skill);
 
-// --- MESSAGES & EMAIL ---
+// --- MESSAGES ---
 exports.getMessages = getAll(Message);
 exports.sendMessage = async (req, res) => {
   const { name, email, message } = req.body;

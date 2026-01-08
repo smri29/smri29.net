@@ -34,6 +34,11 @@ const researchSchema = new mongoose.Schema({
   isPeerReviewed: {
     type: Boolean,
     default: true
+  },
+  // --- NEW FIELD FOR REORDERING ---
+  order: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 

@@ -7,7 +7,7 @@ const {
     getResearch, addResearch, updateResearch, deleteResearch,
     getCertificates, addCertificate, updateCertificate, deleteCertificate,
     getSkills, updateSkills, deleteSkill,
-    getMessages, sendMessage
+    getMessages, sendMessage, reorderItems
 } = require('../controllers/dataController');
 
 // PUBLIC
@@ -18,7 +18,10 @@ router.get('/skills', getSkills);
 router.post('/contact', sendMessage);
 router.post('/chat', chatWithAI);
 
-// ADMIN PROTECTED
+// ADMIN PROTECTED - REORDER
+router.put('/reorder', protect, reorderItems);
+
+// ADMIN PROTECTED - CRUD
 router.route('/research').post(protect, addResearch);
 router.route('/research/:id').put(protect, updateResearch).delete(protect, deleteResearch);
 

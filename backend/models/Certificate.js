@@ -23,6 +23,11 @@ const certificateSchema = new mongoose.Schema({
     type: String,
     enum: ['AI/ML', 'Kaggle', 'Research', 'Professional', 'Others'],
     required: true
+  },
+  // --- NEW FIELD FOR REORDERING ---
+  order: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 

@@ -34,7 +34,12 @@ const projectSchema = new mongoose.Schema({
   contributors: [{
     type: String,
     trim: true
-  }]
+  }],
+  // --- NEW FIELD FOR REORDERING ---
+  order: {
+    type: Number,
+    default: 0
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Project', projectSchema);

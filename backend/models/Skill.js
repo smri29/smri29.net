@@ -4,22 +4,18 @@ const skillSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: [
-      'Programming', 
-      'AI/ML', 
-      'Research', 
-      'MLOps & Deployment', 
-      'Full Stack Development', 
-      'Tools & Platform', 
-      'Soft Skills', 
-      'Languages'
-    ]
+    // REMOVED ENUM: This allows you to create custom categories (like 'Cloud') in the dashboard
   },
   skillsList: [{
     type: String,
     required: true,
     trim: true
-  }]
+  }],
+  // --- NEW FIELD FOR REORDERING ---
+  order: {
+    type: Number,
+    default: 0
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Skill', skillSchema);

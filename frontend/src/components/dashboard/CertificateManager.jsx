@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/axios';
 import { toast } from 'react-toastify';
-import { Award, Plus, Trash2, Edit2, X, ExternalLink } from 'lucide-react';
+import { Award, Plus, Trash2, Edit2, X, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const CertificateManager = () => {
   const [certs, setCerts] = useState([]);
@@ -18,6 +19,18 @@ const CertificateManager = () => {
   const fetchCerts = async () => {
     const { data } = await API.get('/data/certificates');
     setCerts(data);
+  };
+
+  const handleOnDragEnd = async (result) => {
+    if (!result.destination) return;
+    const items = Array.from(certs);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setCerts(items);
+    try {
+      await API.put('/data/reorder', { type: 'certificates', items });
+    } catch (err) { console.error("Reorder failed"); }
   };
 
   const handleSubmit = async (e) => {
@@ -84,20 +97,42 @@ const CertificateManager = () => {
         </form>
       )}
 
-      <div className="grid gap-4">
-        {certs.map(c => (
-          <div key={c._id} className="glass-card p-5 flex justify-between items-center">
-            <div>
-              <h4 className="font-bold text-lg">{c.name}</h4>
-              <p className="text-gray-500 text-sm">{c.issuingOrganization} • {new Date(c.issueDate).toLocaleDateString()}</p>
+      {/* DRAG AND DROP LIST */}
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="certs-list">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className="grid gap-4">
+              {certs.map((c, index) => (
+                <Draggable key={c._id} draggableId={c._id} index={index}>
+                  {(provided, snapshot) => (
+                    <div 
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={`glass-card p-5 flex justify-between items-center ${snapshot.isDragging ? 'border-neon-pink bg-white/5' : ''}`}
+                    >
+                      <div className="flex items-center gap-4">
+                          {/* DRAG HANDLE */}
+                          <div {...provided.dragHandleProps} className="text-gray-500 hover:text-white cursor-grab">
+                            <GripVertical size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-lg">{c.name}</h4>
+                            <p className="text-gray-500 text-sm">{c.issuingOrganization} • {new Date(c.issueDate).toLocaleDateString()}</p>
+                          </div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => startEdit(c)} className="p-2 text-gray-400 hover:text-white"><Edit2 size={16}/></button>
+                        <button onClick={async () => { if(window.confirm('Delete?')) { await API.delete(`/data/certificates/${c._id}`); fetchCerts(); } }} className="p-2 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
             </div>
-            <div className="flex gap-3">
-              <button onClick={() => startEdit(c)} className="p-2 text-gray-400 hover:text-white"><Edit2 size={16}/></button>
-              <button onClick={async () => { if(window.confirm('Delete?')) { await API.delete(`/data/certificates/${c._id}`); fetchCerts(); } }} className="p-2 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
-            </div>
-          </div>
-        ))}
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 };

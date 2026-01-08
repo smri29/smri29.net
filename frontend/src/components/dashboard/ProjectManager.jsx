@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/axios';
 import { toast } from 'react-toastify';
-import { Plus, Trash2, Edit2, X, Code2, Link as LinkIcon, Github } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Code2, Link as LinkIcon, Github, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ProjectManager = () => {
   const [projects, setProjects] = useState([]);
@@ -23,9 +24,20 @@ const ProjectManager = () => {
     } catch (err) { toast.error("Could not fetch projects"); }
   };
 
+  const handleOnDragEnd = async (result) => {
+    if (!result.destination) return;
+    const items = Array.from(projects);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setProjects(items);
+    try {
+      await API.put('/data/reorder', { type: 'projects', items });
+    } catch (err) { console.error("Reorder failed"); }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Convert comma-separated strings to Arrays
     const payload = { 
       ...formData, 
       techStack: formData.techStack.split(',').map(s => s.trim()),
@@ -34,7 +46,7 @@ const ProjectManager = () => {
 
     try {
       if (editingId) {
-        await API.put(`/data/data/projects/${editingId}`, payload);
+        await API.put(`/data/projects/${editingId}`, payload);
         toast.success("Project updated!");
       } else {
         await API.post('/data/projects', payload);
@@ -149,32 +161,54 @@ const ProjectManager = () => {
         </form>
       )}
 
-      {/* PROJECT LIST */}
-      <div className="grid gap-4">
-        {projects.map(p => (
-          <div key={p._id} className="glass-card p-6 flex justify-between items-center group hover:border-neon-pink/30 transition-all">
-            <div>
-              <div className="flex items-center gap-3">
-                <h3 className="text-xl font-bold">{p.projectName}</h3>
-                <span className="text-[10px] bg-white/10 px-2 py-1 rounded text-gray-400 font-mono">{p.category}</span>
-              </div>
-              <p className="text-gray-500 text-sm mt-1 line-clamp-1 max-w-xl">{p.description}</p>
-              <div className="flex gap-2 mt-3">
-                {p.techStack.map(tag => (
-                  <span key={tag} className="text-[10px] border border-white/5 bg-white/5 px-2 py-0.5 rounded text-neon-pink font-semibold">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+      {/* DRAG AND DROP LIST */}
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <Droppable droppableId="projects-list">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} className="grid gap-4">
+              {projects.map((p, index) => (
+                <Draggable key={p._id} draggableId={p._id} index={index}>
+                  {(provided, snapshot) => (
+                    <div 
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={`glass-card p-6 flex justify-between items-center group hover:border-neon-pink/30 transition-all ${snapshot.isDragging ? 'border-neon-pink bg-white/5' : ''}`}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        {/* DRAG HANDLE */}
+                        <div {...provided.dragHandleProps} className="text-gray-500 hover:text-white cursor-grab">
+                          <GripVertical size={20} />
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-xl font-bold">{p.projectName}</h3>
+                            <span className="text-[10px] bg-white/10 px-2 py-1 rounded text-gray-400 font-mono">{p.category}</span>
+                          </div>
+                          <p className="text-gray-500 text-sm mt-1 line-clamp-1 max-w-xl">{p.description}</p>
+                          <div className="flex gap-2 mt-3">
+                            {p.techStack.map(tag => (
+                              <span key={tag} className="text-[10px] border border-white/5 bg-white/5 px-2 py-0.5 rounded text-neon-pink font-semibold">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => startEdit(p)} className="p-2 hover:bg-white/10 rounded-full text-blue-400"><Edit2 size={18}/></button>
+                        <button onClick={() => handleDelete(p._id)} className="p-2 hover:bg-white/10 rounded-full text-red-400"><Trash2 size={18}/></button>
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
             </div>
-            <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onClick={() => startEdit(p)} className="p-2 hover:bg-white/10 rounded-full text-blue-400"><Edit2 size={18}/></button>
-              <button onClick={() => handleDelete(p._id)} className="p-2 hover:bg-white/10 rounded-full text-red-400"><Trash2 size={18}/></button>
-            </div>
-          </div>
-        ))}
-        {projects.length === 0 && <p className="text-center text-gray-600 py-10 italic">No projects added yet.</p>}
-      </div>
+          )}
+        </Droppable>
+      </DragDropContext>
     </div>
   );
 };

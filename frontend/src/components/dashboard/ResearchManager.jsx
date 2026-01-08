@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../api/axios';
 import { toast } from 'react-toastify';
-import { Plus, Trash2, Edit2, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 const ResearchManager = () => {
   const [papers, setPapers] = useState([]);
@@ -17,6 +18,18 @@ const ResearchManager = () => {
   const fetchPapers = async () => {
     const { data } = await API.get('/data/research');
     setPapers(data);
+  };
+
+  const handleOnDragEnd = async (result) => {
+    if (!result.destination) return;
+    const items = Array.from(papers);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    
+    setPapers(items); // Update UI
+    try {
+      await API.put('/data/reorder', { type: 'research', items });
+    } catch (err) { console.error("Reorder failed"); }
   };
 
   const handleSubmit = async (e) => {
@@ -97,27 +110,49 @@ const ResearchManager = () => {
         </form>
       )}
 
-      {/* Table of Research Papers */}
+      {/* DRAG AND DROP TABLE */}
       <div className="glass-card overflow-hidden">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="bg-white/5 text-gray-400 text-xs uppercase"><th className="p-6">Paper</th><th className="p-6 text-center">Actions</th></tr>
-          </thead>
-          <tbody>
-            {papers.map(p => (
-              <tr key={p._id} className="border-b border-white/5">
-                <td className="p-6">
-                  <div className="font-bold">{p.title}</div>
-                  <div className="text-xs text-neon-pink">{p.publicationName} ({p.type})</div>
-                </td>
-                <td className="p-6 flex justify-center gap-4">
-                  <button onClick={() => startEdit(p)} className="text-gray-400 hover:text-white"><Edit2 size={18}/></button>
-                  <button onClick={() => handleDelete(p._id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18}/></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DragDropContext onDragEnd={handleOnDragEnd}>
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-white/5 text-gray-400 text-xs uppercase"><th className="p-6">Paper</th><th className="p-6 text-center">Actions</th></tr>
+            </thead>
+            <Droppable droppableId="research-list">
+              {(provided) => (
+                <tbody ref={provided.innerRef} {...provided.droppableProps}>
+                  {papers.map((p, index) => (
+                    <Draggable key={p._id} draggableId={p._id} index={index}>
+                      {(provided, snapshot) => (
+                        <tr 
+                          ref={provided.innerRef} 
+                          {...provided.draggableProps} 
+                          className={`border-b border-white/5 ${snapshot.isDragging ? 'bg-white/5' : ''}`}
+                        >
+                          <td className="p-6 flex items-start gap-4">
+                            <div {...provided.dragHandleProps} className="mt-1 text-gray-500 cursor-grab hover:text-white">
+                                <GripVertical size={20} />
+                            </div>
+                            <div>
+                                <div className="font-bold">{p.title}</div>
+                                <div className="text-xs text-neon-pink">{p.publicationName} ({p.type})</div>
+                            </div>
+                          </td>
+                          <td className="p-6 text-center">
+                            <div className="flex justify-center gap-4">
+                                <button onClick={() => startEdit(p)} className="text-gray-400 hover:text-white"><Edit2 size={18}/></button>
+                                <button onClick={() => handleDelete(p._id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18}/></button>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </tbody>
+              )}
+            </Droppable>
+          </table>
+        </DragDropContext>
       </div>
     </div>
   );
