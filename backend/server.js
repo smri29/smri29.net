@@ -11,9 +11,16 @@ connectDB();
 
 const app = express();
 
-// --- SECURE CORS CONFIGURATION ---
+// --- SMART CORS CONFIGURATION ---
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*', // Uses your Vercel URL in prod, or allows all if var is missing
+  // We allow an ARRAY of origins. The backend will accept requests from ANY of these.
+  origin: [
+    "http://localhost:5173",                 // 1. Your Local Frontend (Vite)
+    "https://smri29net.vercel.app",          // 2. Your Live Vercel Frontend
+    "https://smri29.net",                    // 3. Your Future Domain (Pre-approved)
+    process.env.FRONTEND_URL                 // 4. Any extra overrides from .env
+  ].filter(Boolean),                         // This removes any empty/null values if variables aren't set
+  
   credentials: true, // Allows cookies/headers if needed
   optionsSuccessStatus: 200
 };
