@@ -4,13 +4,18 @@ import Hero from '../components/Hero';
 import About from '../components/About';
 import Skills from '../components/Skills';
 import Contact from '../components/Contact';
-import ChatWidget from '../components/ChatWidget'; // <--- Imported ChatWidget
+import ChatWidget from '../components/ChatWidget';
 import API from '../api/axios';
+import { ChevronDown, ChevronUp, ExternalLink, Github, Award, BookOpen } from 'lucide-react';
 
 const Home = () => {
   const [research, setResearch] = useState([]);
   const [projects, setProjects] = useState([]);
   const [certificates, setCertificates] = useState([]);
+  
+  // State to track expanded items (Key: _id, Value: boolean)
+  const [expandedProjects, setExpandedProjects] = useState({});
+  const [expandedResearch, setExpandedResearch] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +35,15 @@ const Home = () => {
     fetchData();
   }, []);
 
+  // Helpers to toggle details
+  const toggleProject = (id) => {
+    setExpandedProjects(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleResearch = (id) => {
+    setExpandedResearch(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
   const renderResearch = (items, type) => {
     const filtered = items.filter(item => item.type === type);
     if (filtered.length === 0) return null;
@@ -40,26 +54,60 @@ const Home = () => {
           {type}
         </h4>
         <div className="grid md:grid-cols-2 gap-8">
-          {filtered.map((item) => (
-            <div key={item._id} className="glass-card p-6 border border-white/5 hover:border-neon-pink/30 transition-all flex flex-col justify-between group">
-              <div>
-                <h5 className="text-xl font-bold text-white group-hover:text-neon-pink transition-colors">
-                  {item.title}
-                </h5>
-                <p className="text-xs text-neon-pink mt-1 mb-3">{item.publicationName} • {new Date(item.publicationDate).getFullYear()}</p>
-                <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed">
-                  {item.abstract}
-                </p>
+          {filtered.map((item) => {
+            const isExpanded = !!expandedResearch[item._id];
+
+            return (
+              <div key={item._id} className="glass-card p-6 border border-white/5 hover:border-neon-pink/30 transition-all flex flex-col justify-between group">
+                <div>
+                  <h5 className="text-xl font-bold text-white group-hover:text-neon-pink transition-colors">
+                    {item.title}
+                  </h5>
+                  <p className="text-xs text-neon-pink mt-1 mb-3">{item.publicationName} • {new Date(item.publicationDate).getFullYear()}</p>
+                  
+                  {/* Abstract - Conditional Line Clamp */}
+                  <p className={`text-gray-400 text-sm leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                    {item.abstract}
+                  </p>
+
+                  {/* Expanded Content: Authors & details */}
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-white/5 space-y-2 animate-in fade-in slide-in-from-top-2">
+                       {item.authors && item.authors.length > 0 && (
+                          <div className="text-xs">
+                             <span className="text-neon-pink font-bold">Authors: </span>
+                             <span className="text-gray-300">{item.authors.join(', ')}</span>
+                          </div>
+                       )}
+                       <div className="text-xs">
+                          <span className="text-neon-pink font-bold">Type: </span>
+                          <span className="text-gray-300">{item.type}</span>
+                       </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer: Links & Read More */}
+                <div className="flex justify-between items-center mt-6 pt-2">
+                  <div>
+                    {item.doiLink && (
+                      <a href={item.doiLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-bold text-white hover:text-neon-pink underline decoration-neon-pink">
+                        <ExternalLink size={12} /> Read Publication
+                      </a>
+                    )}
+                  </div>
+
+                  <button 
+                    onClick={() => toggleResearch(item._id)} 
+                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-neon-pink transition-colors font-medium"
+                  >
+                    {isExpanded ? 'Show Less' : 'Read More'}
+                    {isExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                  </button>
+                </div>
               </div>
-              <div className="mt-6">
-                {item.doiLink && (
-                  <a href={item.doiLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-white hover:text-neon-pink underline decoration-neon-pink">
-                    Read Publication
-                  </a>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -75,31 +123,72 @@ const Home = () => {
           {category}
         </h4>
         <div className="grid md:grid-cols-3 gap-8">
-          {filtered.map((item) => (
-            <div key={item._id} className="glass-card p-6 border border-white/5 hover:border-neon-pink/30 transition-all flex flex-col justify-between group">
-              <div>
-                <h5 className="text-lg font-bold text-white group-hover:text-neon-pink transition-colors">
-                  {item.projectName}
-                </h5>
-                <div className="flex flex-wrap gap-2 my-3">
-                    {item.techStack.slice(0, 3).map(tech => (
-                        <span key={tech} className="text-[10px] bg-white/5 px-2 py-1 rounded text-gray-400 border border-white/5">{tech}</span>
-                    ))}
+          {filtered.map((item) => {
+            const isExpanded = !!expandedProjects[item._id]; // Check if this specific card is open
+
+            return (
+              <div key={item._id} className="glass-card p-6 border border-white/5 hover:border-neon-pink/30 transition-all flex flex-col justify-between group">
+                <div>
+                  <h5 className="text-lg font-bold text-white group-hover:text-neon-pink transition-colors">
+                    {item.projectName}
+                  </h5>
+                  
+                  {/* Tech Stack Tags */}
+                  <div className="flex flex-wrap gap-2 my-3">
+                      {item.techStack.slice(0, 3).map(tech => (
+                          <span key={tech} className="text-[10px] bg-white/5 px-2 py-1 rounded text-gray-400 border border-white/5">{tech}</span>
+                      ))}
+                      {item.techStack.length > 3 && <span className="text-[10px] text-gray-500">+{item.techStack.length - 3}</span>}
+                  </div>
+
+                  {/* Description - Conditional Line Clamp */}
+                  <p className={`text-gray-400 text-sm leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                    {item.description}
+                  </p>
+
+                  {/* Expanded Content (Role & Contributors) */}
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-white/5 space-y-2 animate-in fade-in slide-in-from-top-2">
+                       <div className="text-xs">
+                          <span className="text-neon-pink font-bold">Role: </span> 
+                          <span className="text-gray-300">{item.role || 'Developer'}</span>
+                       </div>
+                       {item.contributors && item.contributors.length > 0 && (
+                          <div className="text-xs">
+                             <span className="text-neon-pink font-bold">Team: </span>
+                             <span className="text-gray-400">{item.contributors.join(', ')}</span>
+                          </div>
+                       )}
+                    </div>
+                  )}
                 </div>
-                <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed">
-                  {item.description}
-                </p>
+
+                {/* Footer: Links & Read More Toggle */}
+                <div className="flex justify-between items-center mt-6 pt-2">
+                  <div className="flex gap-4">
+                    {item.liveLink && (
+                      <a href={item.liveLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-bold text-neon-pink hover:underline">
+                         <ExternalLink size={12}/> Live
+                      </a>
+                    )}
+                    {item.githubLink && (
+                      <a href={item.githubLink} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs font-bold text-gray-500 hover:text-white">
+                         <Github size={12}/> Code
+                      </a>
+                    )}
+                  </div>
+
+                  <button 
+                    onClick={() => toggleProject(item._id)} 
+                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-neon-pink transition-colors font-medium"
+                  >
+                    {isExpanded ? 'Show Less' : 'Read More'}
+                    {isExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-4 mt-6">
-                {item.liveLink && (
-                  <a href={item.liveLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-neon-pink hover:underline">Live Demo</a>
-                )}
-                {item.githubLink && (
-                  <a href={item.githubLink} target="_blank" rel="noreferrer" className="text-xs font-bold text-gray-500 hover:text-white">GitHub</a>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -110,20 +199,31 @@ const Home = () => {
     if (filtered.length === 0) return null;
 
     return (
-      <div className="mb-8">
-        <h4 className="text-gray-400 text-xs uppercase tracking-widest mb-4 font-bold">
+      <div className="mb-12">
+        <h4 className="text-gray-400 text-xs uppercase tracking-widest mb-4 font-bold flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-neon-pink"></span>
           {category}
         </h4>
-        <div className="grid gap-4">
+        
+        {/* Full Width Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((item) => (
-            <div key={item._id} className="glass-card p-4 flex justify-between items-center hover:bg-white/5 transition-colors">
-               <div>
-                  <h5 className="font-bold text-sm text-white">{item.name}</h5>
-                  <p className="text-xs text-gray-500">{item.issuingOrganization}</p>
+            <div key={item._id} className="glass-card p-5 border border-white/5 hover:border-neon-pink/30 hover:bg-white/5 transition-all group relative overflow-hidden">
+               <div className="absolute inset-0 bg-gradient-to-r from-neon-pink/0 to-neon-pink/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+               
+               <div className="relative z-10 flex justify-between items-start">
+                   <div>
+                      <h5 className="font-bold text-sm text-white leading-tight mb-1">{item.name}</h5>
+                      <p className="text-xs text-gray-500">{item.issuingOrganization}</p>
+                      <p className="text-[10px] text-gray-600 mt-2">{new Date(item.issueDate).toLocaleDateString()}</p>
+                   </div>
+                   
+                   {item.verificationLink && (
+                       <a href={item.verificationLink} target="_blank" rel="noreferrer" className="text-gray-500 hover:text-neon-pink transition-colors">
+                           <ExternalLink size={16}/>
+                       </a>
+                   )}
                </div>
-               {item.verificationLink && (
-                   <a href={item.verificationLink} target="_blank" rel="noreferrer" className="text-[10px] border border-neon-pink/50 text-neon-pink px-3 py-1 rounded-full hover:bg-neon-pink hover:text-white transition-all">Verify</a>
-               )}
             </div>
           ))}
         </div>
@@ -170,24 +270,22 @@ const Home = () => {
         {/* CERTIFICATIONS SECTION */}
         <section id="certifications" className="py-24 px-6 border-t border-white/5 bg-black/40 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-12">Professional <span className="text-neon-pink">Certifications</span></h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              <div className="space-y-6">
-                {renderCerts(certificates, 'AI/ML')}
-                {renderCerts(certificates, 'Kaggle')}
-              </div>
-              <div className="space-y-6">
-                {renderCerts(certificates, 'Research')}
-                {renderCerts(certificates, 'Professional')}
-              </div>
+            <div className="flex items-center gap-3 mb-12">
+               <Award className="text-neon-pink" size={32} />
+               <h2 className="text-3xl font-bold">Professional <span className="text-neon-pink">Certifications</span></h2>
             </div>
+            
+            {renderCerts(certificates, 'AI/ML')}
+            {renderCerts(certificates, 'Kaggle')}
+            {renderCerts(certificates, 'Research')}
+            {renderCerts(certificates, 'Professional')}
+            {renderCerts(certificates, 'Others')}
           </div>
         </section>
 
         <Contact />
       </main>
 
-      {/* RIZVI AI CHATBOT - Added Here */}
       <ChatWidget />
 
       <footer className="py-12 text-center border-t border-white/5 bg-black/80 text-gray-500 text-sm relative z-20">
