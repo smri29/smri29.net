@@ -7,14 +7,18 @@ const {
     getResearch, addResearch, updateResearch, deleteResearch,
     getCertificates, addCertificate, updateCertificate, deleteCertificate,
     getSkills, updateSkills, deleteSkill,
+    getExperience, addExperience, updateExperience, deleteExperience, // NEW
+    getHobbies, addHobby, updateHobby, deleteHobby, // NEW
     getMessages, sendMessage, reorderItems
 } = require('../controllers/dataController');
 
-// PUBLIC
+// PUBLIC ROUTES
 router.get('/projects', getProjects);
 router.get('/research', getResearch);
 router.get('/certificates', getCertificates);
 router.get('/skills', getSkills);
+router.get('/experience', getExperience); // NEW
+router.get('/hobbies', getHobbies);       // NEW
 router.post('/contact', sendMessage);
 router.post('/chat', chatWithAI);
 
@@ -33,6 +37,14 @@ router.route('/certificates/:id').put(protect, updateCertificate).delete(protect
 
 router.route('/skills').post(protect, updateSkills);
 router.route('/skills/:id').delete(protect, deleteSkill);
+
+// NEW: EXPERIENCE ROUTES
+router.route('/experience').post(protect, addExperience);
+router.route('/experience/:id').put(protect, updateExperience).delete(protect, deleteExperience);
+
+// NEW: HOBBY ROUTES
+router.route('/hobbies').post(protect, addHobby);
+router.route('/hobbies/:id').put(protect, updateHobby).delete(protect, deleteHobby);
 
 router.get('/messages', protect, getMessages);
 

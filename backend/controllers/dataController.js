@@ -3,6 +3,8 @@ const Project = require('../models/Project');
 const Certificate = require('../models/Certificate');
 const Skill = require('../models/Skill');
 const Message = require('../models/Message');
+const Experience = require('../models/Experience'); // NEW
+const Hobby = require('../models/Hobby'); // NEW
 const nodemailer = require('nodemailer');
 
 // --- EMAIL CONFIG ---
@@ -34,22 +36,22 @@ const deleteItem = (Model) => async (req, res) => {
 
 // --- FIX: REORDER LOGIC ---
 exports.reorderItems = async (req, res) => {
-  const { type, items } = req.body; // items = [{ _id: '123', ... }, { _id: '456', ... }]
+  const { type, items } = req.body; 
   
   let Model;
   if (type === 'research') Model = Research;
   else if (type === 'projects') Model = Project;
   else if (type === 'certificates') Model = Certificate;
-  else if (type === 'skills') Model = Skill; // <--- ADDED THIS FOR SKILLS
+  else if (type === 'skills') Model = Skill;
+  else if (type === 'experience') Model = Experience; // NEW
+  else if (type === 'hobbies') Model = Hobby; // NEW
   
   if (!Model) return res.status(400).json({ message: "Invalid type for reordering" });
 
   try {
-    // Efficiently update multiple documents at once
     const bulkOps = items.map((item, index) => ({
       updateOne: {
         filter: { _id: item._id },
-        // CRITICAL FIX: Added $set. Without this, MongoDB ignores the update.
         update: { $set: { order: index } } 
       }
     }));
@@ -111,6 +113,30 @@ exports.updateSkills = async (req, res) => {
   } catch (error) { res.status(400).json({ message: error.message }); }
 };
 exports.deleteSkill = deleteItem(Skill);
+
+// --- EXPERIENCE (NEW) ---
+exports.getExperience = getAll(Experience);
+exports.addExperience = async (req, res) => {
+  try { res.status(201).json(await Experience.create(req.body)); } 
+  catch (error) { res.status(400).json({ message: error.message }); }
+};
+exports.updateExperience = async (req, res) => {
+  try { res.json(await Experience.findByIdAndUpdate(req.params.id, req.body, { new: true })); } 
+  catch (error) { res.status(400).json({ message: error.message }); }
+};
+exports.deleteExperience = deleteItem(Experience);
+
+// --- HOBBIES (NEW) ---
+exports.getHobbies = getAll(Hobby);
+exports.addHobby = async (req, res) => {
+  try { res.status(201).json(await Hobby.create(req.body)); } 
+  catch (error) { res.status(400).json({ message: error.message }); }
+};
+exports.updateHobby = async (req, res) => {
+  try { res.json(await Hobby.findByIdAndUpdate(req.params.id, req.body, { new: true })); } 
+  catch (error) { res.status(400).json({ message: error.message }); }
+};
+exports.deleteHobby = deleteItem(Hobby);
 
 // --- MESSAGES ---
 exports.getMessages = getAll(Message);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Code, Award, Cpu, Mail, LogOut, LayoutDashboard } from 'lucide-react';
+import { BookOpen, Code, Award, Cpu, Mail, LogOut, LayoutDashboard, Briefcase, Heart } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const navigate = useNavigate();
@@ -8,8 +8,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
   const menuItems = [
     { id: 'research', label: 'Research', icon: <BookOpen size={20}/> },
     { id: 'projects', label: 'Projects', icon: <Code size={20}/> },
+    { id: 'experience', label: 'Experience', icon: <Briefcase size={20}/> }, // NEW
     { id: 'certificates', label: 'Certificates', icon: <Award size={20}/> },
     { id: 'skills', label: 'Skills', icon: <Cpu size={20}/> },
+    { id: 'hobbies', label: 'Interests', icon: <Heart size={20}/> }, // NEW
     { id: 'messages', label: 'Messages', icon: <Mail size={20}/> },
   ];
 

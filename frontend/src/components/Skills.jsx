@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api/axios';
+import { Cpu } from 'lucide-react';
 
 const Skills = () => {
   const [skillCategories, setSkillCategories] = useState([]);
@@ -17,14 +18,18 @@ const Skills = () => {
   }, []);
 
   return (
-    <section id="skills" className="py-24 px-6 bg-black/20">
+    <section id="skills" className="py-24 px-6 border-t border-white/5 bg-black/40 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto text-white">
-        <h2 className="text-3xl font-bold mb-12 text-center">Technical <span className="text-neon-pink">Proficiency</span></h2>
+        {/* HEADER - Updated to Left Align with Icon */}
+        <div className="flex items-center gap-3 mb-12">
+           <Cpu className="text-neon-pink" size={32} />
+           <h2 className="text-3xl font-bold">Technical <span className="text-neon-pink">Proficiency</span></h2>
+        </div>
         
         {skillCategories.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {skillCategories.map((cat) => (
-              <div key={cat._id} className="glass-card p-8 border-t-4 border-t-neon-pink/50 flex flex-col h-full">
+              <div key={cat._id} className="glass-card p-8 border-t-4 border-t-neon-pink/50 flex flex-col h-full hover:bg-white/5 transition-colors">
                 <h3 className="text-xl font-bold mb-6">{cat.category}</h3>
                 <div className="flex flex-wrap gap-2 content-start">
                   {cat.skillsList.map(skill => (

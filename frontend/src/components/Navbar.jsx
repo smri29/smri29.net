@@ -12,11 +12,12 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // UPDATED: The exact order you requested (Essential items only)
   const links = [
     { name: 'About', to: 'about' },
-    { name: 'Skills', to: 'skills' },
-    { name: 'Research', to: 'research' },
+    { name: 'Experience', to: 'experience' },
     { name: 'Projects', to: 'projects' },
+    { name: 'Skills', to: 'skills' },
     { name: 'Certifications', to: 'certifications' },
     { name: 'Contact', to: 'contact' }
   ];
@@ -34,14 +35,20 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden lg:flex gap-8">
           {links.map(link => (
-            <Link key={link.to} to={link.to} smooth={true} spy={true} offset={-70} className="text-gray-400 hover:text-neon-pink cursor-pointer transition-colors text-sm font-medium">
+            <Link 
+              key={link.to} 
+              to={link.to} 
+              smooth={true} 
+              spy={true} 
+              offset={-70} 
+              className="text-gray-400 hover:text-neon-pink cursor-pointer transition-colors text-sm font-medium"
+            >
               {link.name}
             </Link>
           ))}
         </div>
 
         <div className="flex items-center gap-4">
-          {/* UPDATED: Correct path to /cv.pdf and added 'download' attribute */}
           <a 
             href="/cv.pdf" 
             download="Shah_Mohammad_Rizvi_CV.pdf"
@@ -71,7 +78,6 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
-           {/* UPDATED: Correct path here as well */}
            <a 
              href="/cv.pdf" 
              download="Shah_Mohammad_Rizvi_CV.pdf"
