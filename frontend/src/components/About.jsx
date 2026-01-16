@@ -6,7 +6,7 @@ import meImg from '../assets/me.jpg'; // Import the image
 const About = () => {
   const highlights = [
     { icon: <GraduationCap />, title: 'Education', detail: 'BSc in CSE, IUBAT (CGPA 3.82)' },
-    { icon: <BookOpen />, title: 'Research', detail: '7+ Publications in ML/CV' },
+    { icon: <BookOpen />, title: 'Research', detail: '5+ Publications in ML/CV' },
     { icon: <Award />, title: 'Leadership', detail: 'Founder & President, CollabCircle' },
   ];
 
