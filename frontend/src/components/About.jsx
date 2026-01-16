@@ -38,13 +38,17 @@ const About = () => {
             <h2 className="text-sm uppercase tracking-[0.3em] text-neon-pink font-semibold mb-2">Introduction</h2>
             <h3 className="text-4xl font-bold mb-6">Driven by Data, <br/>Defined by <span className="text-neon-pink">Research.</span></h3>
             <p className="text-gray-400 text-lg leading-relaxed mb-8">
-              I am a final-year Computer Science student specializing in <strong>Machine Learning and Deep Learning</strong>. 
-              My academic journey is defined by a rigorous 3.82 CGPA and a passion for solving real-world problems 
-              through Computer Vision. 
-              <br/><br/>
-              As the Founder of <strong>CollabCircle</strong>, I have cultivated a research-driven environment where we 
-              transform complex data into actionable insights. I am currently seeking opportunities to apply my 
-              technical skills in a professional engineering team.
+              I am Shah Mohammad Rizvi, a driven and creative Computer Science & Engineering graduate from IUBAT with a CGPA of 3.82.
+              I am now focused on bridging the gap between sophisticated AI/ML research and scalable Full-Stack production systems.
+              
+              My expertise lies at the intersection of intelligence and implementation.
+              I excel in building RAG-based LLM systems and Deep Learning models (Computer Vision & Time-Series), 
+              while simultaneously architecting robust web applications using the MERN stack, Next.js, and Docker.
+              
+              As the Founder of CollabCircle, I lead research-driven initiatives—such as developing GenAI assistants
+              and published intrusion detection systems—to transform complex theoretical data into impactful, real-world tools.
+              Whether it's optimizing a Transformer model for sub-1ms inference or engineering a real-time bidding platform,
+              I am committed to technical excellence, punctual delivery, and continuous innovation.
             </p>
 
             <div className="grid gap-4">
