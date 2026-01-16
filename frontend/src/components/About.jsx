@@ -38,17 +38,17 @@ const About = () => {
             <h2 className="text-sm uppercase tracking-[0.3em] text-neon-pink font-semibold mb-2">Introduction</h2>
             <h3 className="text-4xl font-bold mb-6">Driven by Data, <br/>Defined by <span className="text-neon-pink">Research.</span></h3>
             <p className="text-gray-400 text-lg leading-relaxed mb-8">
-              I am Shah Mohammad Rizvi, a driven and creative Computer Science & Engineering graduate from IUBAT with a CGPA of 3.82.
-              I am now focused on bridging the gap between sophisticated AI/ML research and scalable Full-Stack production systems.
-              
-              My expertise lies at the intersection of intelligence and implementation.
-              I excel in building RAG-based LLM systems and Deep Learning models (Computer Vision & Time-Series), 
-              while simultaneously architecting robust web applications using the MERN stack, Next.js, and Docker.
-              
-              As the Founder of CollabCircle, I lead research-driven initiatives—such as developing GenAI assistants
-              and published intrusion detection systems—to transform complex theoretical data into impactful, real-world tools.
-              Whether it's optimizing a Transformer model for sub-1ms inference or engineering a real-time bidding platform,
-              I am committed to technical excellence, punctual delivery, and continuous innovation.
+              I'm Shah Mohammad Rizvi. I am a CSE graduate (CGPA 3.82) focused on bridging 
+              the gap between sophisticated AI/ML research and scalable Full-Stack production systems.
+    
+              With a focus on "Intelligence + Implementation," I build RAG-powered LLM 
+              systems and Deep Learning models  while architecting robust 
+              web applications using the MERN stack. 
+    
+              As the founder of CollabCircle, I transform complex data into 
+              real-world tools-from sub-1ms inference Transformers to 
+              real-time event-driven platforms. I am a lifelong learner 
+              committed to technical excellence and delivering measurable product impact.
             </p>
 
             <div className="grid gap-4">
