@@ -1,42 +1,80 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Calendar, Mail, Trash2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 import API from '../../api/axios';
-import { Mail, Calendar, User, Trash2 } from 'lucide-react';
 
 const MessageInbox = () => {
   const [messages, setMessages] = useState([]);
 
-  useEffect(() => {
-    const fetchMsgs = async () => {
+  const fetchMessages = useCallback(async () => {
+    try {
       const { data } = await API.get('/data/messages');
-      setMessages(data);
-    };
-    fetchMsgs();
+      setMessages(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error('Failed to load inbox');
+    }
   }, []);
 
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  const deleteMessage = async (id) => {
+    if (!window.confirm('Delete this message?')) {
+      return;
+    }
+
+    try {
+      await API.delete(`/data/messages/${id}`);
+      toast.success('Message deleted');
+      setMessages((prev) => prev.filter((message) => message._id !== id));
+    } catch (error) {
+      toast.error('Delete failed');
+    }
+  };
+
   return (
-    <div className="animate-in fade-in duration-500">
-      <h2 className="text-2xl font-bold mb-8 flex items-center gap-2"><Mail className="text-neon-pink" /> Recruiter Inquiries</h2>
+    <div>
+      <h2 className="mb-7 inline-flex items-center gap-2 text-2xl font-semibold text-slate-100">
+        <Mail className="text-cyan-200" size={22} /> Recruiter Inquiries
+      </h2>
+
       <div className="space-y-4">
-        {messages.map(msg => (
-          <div key={msg._id} className="glass-card p-6 group relative">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+        {messages.map((message) => (
+          <article key={message._id} className="glass-card border-white/10 p-5">
+            <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-center">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-neon-pink/20 flex items-center justify-center text-neon-pink uppercase font-bold text-xl">
-                  {msg.name[0]}
+                <div className="grid h-10 w-10 place-items-center rounded-full border border-cyan-300/40 bg-cyan-300/15 text-lg font-bold uppercase text-cyan-200">
+                  {message.name?.[0] || '?'}
                 </div>
                 <div>
-                  <h4 className="font-bold flex items-center gap-2 underline decoration-neon-pink/30">{msg.name}</h4>
-                  <p className="text-xs text-gray-500">{msg.email}</p>
+                  <h3 className="font-semibold text-slate-100">{message.name}</h3>
+                  <p className="text-xs text-slate-400">{message.email}</p>
                 </div>
               </div>
-              <div className="text-xs text-gray-500 flex items-center gap-2">
-                <Calendar size={12}/> {new Date(msg.createdAt).toLocaleString()}
+
+              <div className="flex items-center gap-4">
+                <div className="inline-flex items-center gap-1 text-xs text-slate-400">
+                  <Calendar size={12} /> {new Date(message.createdAt).toLocaleString()}
+                </div>
+                <button
+                  onClick={() => deleteMessage(message._id)}
+                  className="rounded-md p-2 text-slate-400 transition hover:bg-white/10 hover:text-red-400"
+                  type="button"
+                  aria-label="Delete message"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
-            <p className="text-gray-300 bg-white/5 p-4 rounded-lg text-sm italic border-l-2 border-white/10">"{msg.message}"</p>
-          </div>
+
+            <p className="rounded-lg border border-white/10 bg-slate-900/60 p-4 text-sm leading-relaxed text-slate-300">
+              {message.message}
+            </p>
+          </article>
         ))}
-        {messages.length === 0 && <p className="text-center text-gray-600 py-20 italic">No messages yet.</p>}
+
+        {messages.length === 0 && <p className="py-16 text-center text-sm text-slate-400">No messages yet.</p>}
       </div>
     </div>
   );

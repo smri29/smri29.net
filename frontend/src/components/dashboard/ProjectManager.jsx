@@ -1,209 +1,278 @@
-import React, { useState, useEffect } from 'react';
-import API from '../../api/axios';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { Code2, Edit2, Github, GripVertical, Link as LinkIcon, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Plus, Trash2, Edit2, X, Code2, Link as LinkIcon, Github, GripVertical } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import API from '../../api/axios';
+
+const emptyForm = {
+  projectName: '',
+  description: '',
+  techStack: '',
+  category: 'AI/ML',
+  githubLink: '',
+  liveLink: '',
+  role: 'Lead Developer',
+  contributors: '',
+};
 
 const ProjectManager = () => {
   const [projects, setProjects] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
-  const [formData, setFormData] = useState({
-    projectName: '', description: '', techStack: '', 
-    category: 'AI/ML', githubLink: '', liveLink: '', 
-    role: 'Lead Developer', contributors: ''
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(() => { fetchProjects(); }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       const { data } = await API.get('/data/projects');
-      setProjects(data);
-    } catch (err) { toast.error("Could not fetch projects"); }
-  };
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error('Could not fetch projects');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleOnDragEnd = async (result) => {
     if (!result.destination) return;
+
     const items = Array.from(projects);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
     setProjects(items);
+
     try {
       await API.put('/data/reorder', { type: 'projects', items });
-    } catch (err) { console.error("Reorder failed"); }
+    } catch (error) {
+      toast.error('Reorder failed');
+      fetchProjects();
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = { 
-      ...formData, 
-      techStack: formData.techStack.split(',').map(s => s.trim()),
-      contributors: formData.contributors.split(',').map(c => c.trim())
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      ...formData,
+      techStack: formData.techStack
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean),
+      contributors: formData.contributors
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean),
     };
 
     try {
       if (editingId) {
         await API.put(`/data/projects/${editingId}`, payload);
-        toast.success("Project updated!");
+        toast.success('Project updated');
       } else {
         await API.post('/data/projects', payload);
-        toast.success("Project launched!");
+        toast.success('Project created');
       }
-      resetForm();
+
+      setFormData(emptyForm);
+      setEditingId(null);
+      setIsFormOpen(false);
       fetchProjects();
-    } catch (err) { toast.error("Error saving project"); }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to save project');
+    }
   };
 
-  const startEdit = (proj) => {
-    setFormData({ 
-      ...proj, 
-      techStack: proj.techStack.join(', '),
-      contributors: proj.contributors.join(', ')
+  const startEdit = (project) => {
+    setFormData({
+      projectName: project.projectName || '',
+      description: project.description || '',
+      techStack: Array.isArray(project.techStack) ? project.techStack.join(', ') : '',
+      category: project.category || 'AI/ML',
+      githubLink: project.githubLink || '',
+      liveLink: project.liveLink || '',
+      role: project.role || 'Lead Developer',
+      contributors: Array.isArray(project.contributors) ? project.contributors.join(', ') : '',
     });
-    setEditingId(proj._id);
+    setEditingId(project._id);
     setIsFormOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({ projectName: '', description: '', techStack: '', category: 'AI/ML', githubLink: '', liveLink: '', role: 'Lead Developer', contributors: '' });
-    setEditingId(null);
-    setIsFormOpen(false);
-  };
-
   const handleDelete = async (id) => {
-    if(window.confirm("Are you sure you want to remove this project?")) {
+    if (!window.confirm('Delete this project?')) {
+      return;
+    }
+
+    try {
       await API.delete(`/data/projects/${id}`);
+      toast.info('Project removed');
       fetchProjects();
-      toast.warn("Project deleted");
+    } catch (error) {
+      toast.error('Delete failed');
     }
   };
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-8">
+    <div>
+      <div className="mb-7 flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Code2 className="text-neon-pink" /> Software <span className="text-neon-pink">Projects</span>
+          <h2 className="inline-flex items-center gap-2 text-2xl font-semibold text-slate-100">
+            <Code2 className="text-cyan-200" size={22} /> Projects
           </h2>
-          <p className="text-gray-500 text-sm">Showcase your technical builds</p>
+          <p className="mt-1 text-sm text-slate-400">Manage your technical project showcase.</p>
         </div>
-        <button 
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          className="bg-neon-pink px-5 py-2 rounded-lg flex items-center gap-2 font-bold hover:bg-pink-600 transition-all"
+
+        <button
+          onClick={() => setIsFormOpen((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950"
+          type="button"
         >
-          {isFormOpen ? <X size={20}/> : <Plus size={20}/>} {isFormOpen ? 'Cancel' : 'New Project'}
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />} {isFormOpen ? 'Close' : 'New Project'}
         </button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit} className="glass-card p-8 mb-12 border-t-2 border-neon-pink">
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="col-span-2 md:col-span-1">
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest">Project Name</label>
-              <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.projectName} onChange={e => setFormData({...formData, projectName: e.target.value})} required />
-            </div>
-
-            <div className="col-span-2 md:col-span-1">
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest">Category</label>
-              <select className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-                <option value="AI/ML">AI/ML</option>
-                <option value="MERN">MERN Stack</option>
-                <option value="Flutter">Flutter</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
-
-            <div className="col-span-2">
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest">Description</label>
-              <textarea className="w-full bg-white/5 border border-white/10 p-3 rounded h-32 focus:border-neon-pink outline-none"
-                value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
-            </div>
-
-            <div>
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest text-neon-pink">Tech Stack (Comma Separated)</label>
-              <input placeholder="React, Python, PyTorch..." className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.techStack} onChange={e => setFormData({...formData, techStack: e.target.value})} required />
-            </div>
-
-            <div>
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest">Your Role</label>
-              <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} />
-            </div>
-
-            <div>
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest flex items-center gap-1"><Github size={12}/> GitHub Link</label>
-              <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.githubLink} onChange={e => setFormData({...formData, githubLink: e.target.value})} />
-            </div>
-
-            <div>
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest flex items-center gap-1"><LinkIcon size={12}/> Live Demo</label>
-              <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.liveLink} onChange={e => setFormData({...formData, liveLink: e.target.value})} />
-            </div>
-
-            <div className="col-span-2">
-              <label className="text-xs uppercase text-gray-500 font-bold mb-2 block tracking-widest">Contributors (Optional)</label>
-              <input placeholder="Names separated by commas" className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-                value={formData.contributors} onChange={e => setFormData({...formData, contributors: e.target.value})} />
-            </div>
+        <form onSubmit={handleSubmit} className="glass-card mb-8 grid gap-4 border-white/10 p-6 md:grid-cols-2">
+          <div className="md:col-span-1">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Project Name</label>
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.projectName}
+              onChange={(event) => setFormData({ ...formData, projectName: event.target.value })}
+              required
+            />
           </div>
 
-          <button className="w-full mt-8 bg-neon-pink py-4 rounded-lg font-bold text-lg hover:shadow-[0_0_20px_rgba(236,72,153,0.4)] transition-all">
-            {editingId ? 'Update Project Details' : 'Publish Project'}
+          <div className="md:col-span-1">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Category</label>
+            <select
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.category}
+              onChange={(event) => setFormData({ ...formData, category: event.target.value })}
+            >
+              <option value="AI/ML">AI/ML</option>
+              <option value="MERN">MERN</option>
+              <option value="Flutter">Flutter</option>
+              <option value="Others">Others</option>
+            </select>
+          </div>
+
+          <div className="col-span-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Description</label>
+            <textarea
+              className="h-28 w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.description}
+              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Tech Stack</label>
+            <input
+              placeholder="React, Node.js, MongoDB"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.techStack}
+              onChange={(event) => setFormData({ ...formData, techStack: event.target.value })}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Role</label>
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.role}
+              onChange={(event) => setFormData({ ...formData, role: event.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+              <Github size={12} /> GitHub URL
+            </label>
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.githubLink}
+              onChange={(event) => setFormData({ ...formData, githubLink: event.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wide text-slate-400">
+              <LinkIcon size={12} /> Live URL
+            </label>
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.liveLink}
+              onChange={(event) => setFormData({ ...formData, liveLink: event.target.value })}
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Contributors</label>
+            <input
+              placeholder="Name 1, Name 2"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              value={formData.contributors}
+              onChange={(event) => setFormData({ ...formData, contributors: event.target.value })}
+            />
+          </div>
+
+          <button className="col-span-2 rounded-lg border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-950">
+            {editingId ? 'Update Project' : 'Publish Project'}
           </button>
         </form>
       )}
 
-      {/* DRAG AND DROP LIST */}
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="projects-list">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="grid gap-4">
-              {projects.map((p, index) => (
-                <Draggable key={p._id} draggableId={p._id} index={index}>
-                  {(provided, snapshot) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`glass-card p-6 flex justify-between items-center group hover:border-neon-pink/30 transition-all ${snapshot.isDragging ? 'border-neon-pink bg-white/5' : ''}`}
+              {projects.map((project, index) => (
+                <Draggable key={project._id} draggableId={project._id} index={index}>
+                  {(draggableProvided, snapshot) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      className={`glass-card flex items-center justify-between gap-3 border-white/10 p-5 ${
+                        snapshot.isDragging ? 'border-cyan-300/60 bg-slate-900' : ''
+                      }`}
                     >
-                      <div className="flex items-center gap-4 flex-1">
-                        {/* DRAG HANDLE */}
-                        <div {...provided.dragHandleProps} className="text-gray-500 hover:text-white cursor-grab">
-                          <GripVertical size={20} />
+                      <div className="flex flex-1 items-start gap-3">
+                        <div {...draggableProvided.dragHandleProps} className="mt-1 cursor-grab text-slate-500 hover:text-slate-100">
+                          <GripVertical size={18} />
                         </div>
-
                         <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-xl font-bold">{p.projectName}</h3>
-                            <span className="text-[10px] bg-white/10 px-2 py-1 rounded text-gray-400 font-mono">{p.category}</span>
+                          <div className="mb-1 flex flex-wrap items-center gap-2">
+                            <h3 className="text-lg font-semibold text-slate-100">{project.projectName}</h3>
+                            <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] text-cyan-200">{project.category}</span>
                           </div>
-                          <p className="text-gray-500 text-sm mt-1 line-clamp-1 max-w-xl">{p.description}</p>
-                          <div className="flex gap-2 mt-3">
-                            {p.techStack.map(tag => (
-                              <span key={tag} className="text-[10px] border border-white/5 bg-white/5 px-2 py-0.5 rounded text-neon-pink font-semibold">
+                          <p className="line-clamp-1 text-sm text-slate-400">{project.description}</p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {(project.techStack || []).map((tag, idx) => (
+                              <span key={`${tag}-${idx}`} className="rounded-full border border-white/10 bg-slate-800/70 px-2 py-0.5 text-[10px] text-slate-300">
                                 {tag}
                               </span>
                             ))}
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => startEdit(p)} className="p-2 hover:bg-white/10 rounded-full text-blue-400"><Edit2 size={18}/></button>
-                        <button onClick={() => handleDelete(p._id)} className="p-2 hover:bg-white/10 rounded-full text-red-400"><Trash2 size={18}/></button>
+
+                      <div className="flex gap-2">
+                        <button onClick={() => startEdit(project)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-cyan-200" type="button">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(project._id)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-red-400" type="button">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   )}
                 </Draggable>
               ))}
+
+              {projects.length === 0 && <p className="text-sm text-slate-400">No projects added yet.</p>}
               {provided.placeholder}
             </div>
           )}

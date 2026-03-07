@@ -9,7 +9,7 @@ const {
     getSkills, updateSkills, deleteSkill,
     getExperience, addExperience, updateExperience, deleteExperience, // NEW
     getHobbies, addHobby, updateHobby, deleteHobby, // NEW
-    getMessages, sendMessage, reorderItems
+    getMessages, sendMessage, deleteMessage, reorderItems
 } = require('../controllers/dataController');
 
 // PUBLIC ROUTES
@@ -47,5 +47,6 @@ router.route('/hobbies').post(protect, addHobby);
 router.route('/hobbies/:id').put(protect, updateHobby).delete(protect, deleteHobby);
 
 router.get('/messages', protect, getMessages);
+router.delete('/messages/:id', protect, deleteMessage);
 
 module.exports = router;

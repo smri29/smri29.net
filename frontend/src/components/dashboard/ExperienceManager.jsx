@@ -1,157 +1,215 @@
-import React, { useState, useEffect } from 'react';
-import API from '../../api/axios';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { Briefcase, Calendar, Edit2, GripVertical, MapPin, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Briefcase, Plus, Trash2, Edit2, X, GripVertical, MapPin, Calendar } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import API from '../../api/axios';
+
+const emptyForm = {
+  role: '',
+  company: '',
+  duration: '',
+  location: '',
+  description: '',
+};
 
 const ExperienceManager = () => {
   const [experiences, setExperiences] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
-  const [formData, setFormData] = useState({
-    role: '', company: '', duration: '', location: '', description: ''
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(() => { fetchExperience(); }, []);
-
-  const fetchExperience = async () => {
+  const fetchExperience = useCallback(async () => {
     try {
       const { data } = await API.get('/data/experience');
-      setExperiences(data);
-    } catch (err) { toast.error("Failed to fetch experience"); }
-  };
+      setExperiences(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error('Failed to fetch experience entries');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchExperience();
+  }, [fetchExperience]);
 
   const handleOnDragEnd = async (result) => {
     if (!result.destination) return;
+
     const items = Array.from(experiences);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
     setExperiences(items);
+
     try {
       await API.put('/data/reorder', { type: 'experience', items });
-    } catch (err) { console.error("Reorder failed"); }
+    } catch (error) {
+      toast.error('Reorder failed');
+      fetchExperience();
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     try {
       if (editingId) {
         await API.put(`/data/experience/${editingId}`, formData);
-        toast.success("Experience updated!");
+        toast.success('Experience updated');
       } else {
         await API.post('/data/experience', formData);
-        toast.success("Job added!");
+        toast.success('Experience added');
       }
-      resetForm();
+
+      setFormData(emptyForm);
+      setEditingId(null);
+      setIsFormOpen(false);
       fetchExperience();
-    } catch (err) { toast.error("Save failed"); }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Save failed');
+    }
   };
 
-  const startEdit = (job) => {
-    setFormData(job);
-    setEditingId(job._id);
+  const startEdit = (experience) => {
+    setFormData({
+      role: experience.role || '',
+      company: experience.company || '',
+      duration: experience.duration || '',
+      location: experience.location || '',
+      description: experience.description || '',
+    });
+    setEditingId(experience._id);
     setIsFormOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({ role: '', company: '', duration: '', location: '', description: '' });
-    setEditingId(null);
-    setIsFormOpen(false);
-  };
-
   const handleDelete = async (id) => {
-    if(window.confirm("Delete this job?")) {
+    if (!window.confirm('Delete this experience entry?')) {
+      return;
+    }
+
+    try {
       await API.delete(`/data/experience/${id}`);
+      toast.info('Experience removed');
       fetchExperience();
-      toast.warn("Job removed");
+    } catch (error) {
+      toast.error('Delete failed');
     }
   };
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Briefcase className="text-neon-pink" /> Work <span className="text-neon-pink">Experience</span>
-          </h2>
-        </div>
-        <button 
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          className="bg-neon-pink px-4 py-2 rounded-lg flex items-center gap-2 font-bold hover:bg-pink-600 transition-all"
+    <div>
+      <div className="mb-7 flex items-center justify-between">
+        <h2 className="inline-flex items-center gap-2 text-2xl font-semibold text-slate-100">
+          <Briefcase className="text-cyan-200" size={22} /> Work Experience
+        </h2>
+
+        <button
+          onClick={() => setIsFormOpen((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950"
+          type="button"
         >
-          {isFormOpen ? <X size={20}/> : <Plus size={20}/>} {isFormOpen ? 'Cancel' : 'Add Job'}
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />} {isFormOpen ? 'Close' : 'Add Role'}
         </button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit} className="glass-card p-8 mb-12 border-t-2 border-neon-pink grid md:grid-cols-2 gap-6">
-          <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-            placeholder="Job Role (e.g. Software Engineer)"
-            value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} required />
-            
-          <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-            placeholder="Company Name"
-            value={formData.company} onChange={e => setFormData({...formData, company: e.target.value})} required />
+        <form onSubmit={handleSubmit} className="glass-card mb-8 grid gap-4 border-white/10 p-6 md:grid-cols-2">
+          <input
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            placeholder="Job Role"
+            value={formData.role}
+            onChange={(event) => setFormData({ ...formData, role: event.target.value })}
+            required
+          />
 
-          <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-            placeholder="Duration (e.g. Jan 2024 - Present)"
-            value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} required />
+          <input
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            placeholder="Company"
+            value={formData.company}
+            onChange={(event) => setFormData({ ...formData, company: event.target.value })}
+            required
+          />
 
-          <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-            placeholder="Location (e.g. Remote / Dhaka)"
-            value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} />
+          <input
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            placeholder="Duration"
+            value={formData.duration}
+            onChange={(event) => setFormData({ ...formData, duration: event.target.value })}
+            required
+          />
 
-          <textarea className="w-full bg-white/5 border border-white/10 p-3 rounded h-32 focus:border-neon-pink outline-none col-span-2"
-            placeholder="Description of responsibilities..."
-            value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
+          <input
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            placeholder="Location"
+            value={formData.location}
+            onChange={(event) => setFormData({ ...formData, location: event.target.value })}
+          />
 
-          <button className="col-span-2 bg-neon-pink py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+          <textarea
+            className="col-span-2 h-32 rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            placeholder="Role summary"
+            value={formData.description}
+            onChange={(event) => setFormData({ ...formData, description: event.target.value })}
+            required
+          />
+
+          <button className="col-span-2 rounded-lg border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-950">
             {editingId ? 'Update Experience' : 'Save Experience'}
           </button>
         </form>
       )}
 
-      {/* DRAG AND DROP LIST */}
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="experience-list">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-              {experiences.map((job, index) => (
-                <Draggable key={job._id} draggableId={job._id} index={index}>
-                  {(provided, snapshot) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`glass-card p-6 flex gap-4 group ${snapshot.isDragging ? 'border-neon-pink bg-white/5' : ''}`}
+              {experiences.map((experience, index) => (
+                <Draggable key={experience._id} draggableId={experience._id} index={index}>
+                  {(draggableProvided, snapshot) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      className={`glass-card flex gap-4 border-white/10 p-5 ${
+                        snapshot.isDragging ? 'border-cyan-300/60 bg-slate-900' : ''
+                      }`}
                     >
-                      <div {...provided.dragHandleProps} className="text-gray-500 hover:text-white cursor-grab pt-1">
-                        <GripVertical size={20} />
+                      <div {...draggableProvided.dragHandleProps} className="cursor-grab pt-1 text-slate-500 hover:text-slate-100">
+                        <GripVertical size={18} />
                       </div>
 
                       <div className="flex-1">
-                        <div className="flex justify-between items-start">
+                        <div className="flex flex-col justify-between gap-2 md:flex-row md:items-start">
                           <div>
-                            <h3 className="text-xl font-bold">{job.role}</h3>
-                            <p className="text-neon-pink font-medium">{job.company}</p>
+                            <h3 className="text-lg font-semibold text-slate-100">{experience.role}</h3>
+                            <p className="text-sm text-cyan-200">{experience.company}</p>
                           </div>
-                          <div className="text-right text-xs text-gray-500 space-y-1">
-                            <div className="flex items-center justify-end gap-1"><Calendar size={12}/> {job.duration}</div>
-                            <div className="flex items-center justify-end gap-1"><MapPin size={12}/> {job.location}</div>
+                          <div className="space-y-1 text-xs text-slate-400 md:text-right">
+                            <p className="inline-flex items-center gap-1 md:justify-end">
+                              <Calendar size={12} /> {experience.duration}
+                            </p>
+                            {experience.location && (
+                              <p className="inline-flex items-center gap-1 md:justify-end">
+                                <MapPin size={12} /> {experience.location}
+                              </p>
+                            )}
                           </div>
                         </div>
-                        <p className="mt-3 text-gray-400 text-sm leading-relaxed whitespace-pre-line">{job.description}</p>
+
+                        <p className="mt-3 whitespace-pre-line text-sm text-slate-300">{experience.description}</p>
                       </div>
 
-                      <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => startEdit(job)} className="p-2 text-blue-400 hover:bg-white/10 rounded"><Edit2 size={18}/></button>
-                        <button onClick={() => handleDelete(job._id)} className="p-2 text-red-400 hover:bg-white/10 rounded"><Trash2 size={18}/></button>
+                      <div className="flex flex-col gap-2">
+                        <button onClick={() => startEdit(experience)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-cyan-200" type="button">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(experience._id)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-red-400" type="button">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   )}
                 </Draggable>
               ))}
+
+              {experiences.length === 0 && <p className="text-sm text-slate-400">No experience entries yet.</p>}
               {provided.placeholder}
             </div>
           )}

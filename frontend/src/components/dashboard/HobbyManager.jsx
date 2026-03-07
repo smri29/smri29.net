@@ -1,149 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import API from '../../api/axios';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { Edit2, GripVertical, Heart, Plus, Smile, Trash2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Heart, Plus, Trash2, Edit2, X, GripVertical, Smile } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import API from '../../api/axios';
+
+const emptyForm = {
+  name: '',
+  description: '',
+  icon: '',
+};
 
 const HobbyManager = () => {
   const [hobbies, setHobbies] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
-  const [formData, setFormData] = useState({
-    name: '', description: '', icon: ''
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(() => { fetchHobbies(); }, []);
-
-  const fetchHobbies = async () => {
+  const fetchHobbies = useCallback(async () => {
     try {
       const { data } = await API.get('/data/hobbies');
-      setHobbies(data);
-    } catch (err) { toast.error("Failed to fetch hobbies"); }
-  };
+      setHobbies(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error('Failed to fetch hobbies');
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHobbies();
+  }, [fetchHobbies]);
 
   const handleOnDragEnd = async (result) => {
     if (!result.destination) return;
+
     const items = Array.from(hobbies);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
     setHobbies(items);
+
     try {
       await API.put('/data/reorder', { type: 'hobbies', items });
-    } catch (err) { console.error("Reorder failed"); }
+    } catch (error) {
+      toast.error('Reorder failed');
+      fetchHobbies();
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     try {
       if (editingId) {
         await API.put(`/data/hobbies/${editingId}`, formData);
-        toast.success("Hobby updated!");
+        toast.success('Hobby updated');
       } else {
         await API.post('/data/hobbies', formData);
-        toast.success("Hobby added!");
+        toast.success('Hobby added');
       }
-      resetForm();
+
+      setFormData(emptyForm);
+      setEditingId(null);
+      setIsFormOpen(false);
       fetchHobbies();
-    } catch (err) { toast.error("Save failed"); }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Save failed');
+    }
   };
 
   const startEdit = (hobby) => {
-    setFormData(hobby);
+    setFormData({
+      name: hobby.name || '',
+      description: hobby.description || '',
+      icon: hobby.icon || '',
+    });
     setEditingId(hobby._id);
     setIsFormOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({ name: '', description: '', icon: '' });
-    setEditingId(null);
-    setIsFormOpen(false);
-  };
-
   const handleDelete = async (id) => {
-    if(window.confirm("Delete this hobby?")) {
+    if (!window.confirm('Delete this hobby?')) {
+      return;
+    }
+
+    try {
       await API.delete(`/data/hobbies/${id}`);
+      toast.info('Hobby removed');
       fetchHobbies();
-      toast.warn("Hobby removed");
+    } catch (error) {
+      toast.error('Delete failed');
     }
   };
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <Heart className="text-neon-pink" /> Interests & <span className="text-neon-pink">Hobbies</span>
-          </h2>
-        </div>
-        <button 
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          className="bg-neon-pink px-4 py-2 rounded-lg flex items-center gap-2 font-bold hover:bg-pink-600 transition-all"
+    <div>
+      <div className="mb-7 flex items-center justify-between">
+        <h2 className="inline-flex items-center gap-2 text-2xl font-semibold text-slate-100">
+          <Heart className="text-cyan-200" size={22} /> Interests and Hobbies
+        </h2>
+
+        <button
+          onClick={() => setIsFormOpen((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950"
+          type="button"
         >
-          {isFormOpen ? <X size={20}/> : <Plus size={20}/>} {isFormOpen ? 'Cancel' : 'Add Interest'}
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />} {isFormOpen ? 'Close' : 'Add'}
         </button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit} className="glass-card p-6 mb-12 border-t-2 border-neon-pink grid md:grid-cols-4 gap-4">
+        <form onSubmit={handleSubmit} className="glass-card mb-8 grid gap-4 border-white/10 p-6 md:grid-cols-4">
           <div className="md:col-span-1">
-            <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none text-center"
-              placeholder="Icon (e.g. 📷)"
-              value={formData.icon} onChange={e => setFormData({...formData, icon: e.target.value})} />
-            <p className="text-[10px] text-gray-500 mt-1 text-center">Windows: Win + . | Mac: Cmd + Ctrl + Space</p>
-          </div>
-            
-          <div className="md:col-span-3">
-             <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none mb-3"
-              placeholder="Hobby Name (e.g. Photography)"
-              value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-             
-             <input className="w-full bg-white/5 border border-white/10 p-3 rounded focus:border-neon-pink outline-none"
-              placeholder="Short Description (e.g. Capturing urban landscapes)"
-              value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} />
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 text-center outline-none focus:border-cyan-300/60"
+              placeholder="Icon"
+              value={formData.icon}
+              onChange={(event) => setFormData({ ...formData, icon: event.target.value })}
+              maxLength={16}
+            />
+            <p className="mt-1 text-center text-[10px] text-slate-500">Emoji or short symbol</p>
           </div>
 
-          <button className="md:col-span-4 bg-neon-pink py-3 rounded-lg font-bold hover:shadow-lg transition-all">
+          <div className="space-y-3 md:col-span-3">
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              placeholder="Hobby Name"
+              value={formData.name}
+              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+              required
+            />
+
+            <input
+              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+              placeholder="Short Description"
+              value={formData.description}
+              onChange={(event) => setFormData({ ...formData, description: event.target.value })}
+            />
+          </div>
+
+          <button className="md:col-span-4 rounded-lg border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-950">
             {editingId ? 'Update Hobby' : 'Save Hobby'}
           </button>
         </form>
       )}
 
-      {/* DRAG AND DROP GRID */}
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="hobbies-list">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div {...provided.droppableProps} ref={provided.innerRef} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {hobbies.map((hobby, index) => (
                 <Draggable key={hobby._id} draggableId={hobby._id} index={index}>
-                  {(provided, snapshot) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`glass-card p-5 flex items-center gap-4 group hover:border-neon-pink/30 ${snapshot.isDragging ? 'border-neon-pink bg-white/5' : ''}`}
+                  {(draggableProvided, snapshot) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      className={`glass-card flex items-center gap-4 border-white/10 p-4 ${
+                        snapshot.isDragging ? 'border-cyan-300/60 bg-slate-900' : ''
+                      }`}
                     >
-                      <div {...provided.dragHandleProps} className="text-gray-500 hover:text-white cursor-grab">
-                        <GripVertical size={20} />
+                      <div {...draggableProvided.dragHandleProps} className="cursor-grab text-slate-500 hover:text-slate-100">
+                        <GripVertical size={18} />
                       </div>
 
-                      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xl">
-                         {hobby.icon || <Smile size={20}/>}
+                      <div className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-slate-800/70 text-xl text-cyan-200">
+                        {hobby.icon || <Smile size={18} />}
                       </div>
 
                       <div className="flex-1">
-                        <h4 className="font-bold">{hobby.name}</h4>
-                        <p className="text-xs text-gray-400">{hobby.description}</p>
+                        <p className="font-medium text-slate-100">{hobby.name}</p>
+                        <p className="text-xs text-slate-400">{hobby.description}</p>
                       </div>
 
-                      <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => startEdit(hobby)} className="text-blue-400 hover:text-white"><Edit2 size={16}/></button>
-                        <button onClick={() => handleDelete(hobby._id)} className="text-red-400 hover:text-white"><Trash2 size={16}/></button>
+                      <div className="flex gap-2">
+                        <button onClick={() => startEdit(hobby)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-cyan-200" type="button">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(hobby._id)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-red-400" type="button">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   )}
                 </Draggable>
               ))}
+
+              {hobbies.length === 0 && <p className="text-sm text-slate-400">No hobbies added yet.</p>}
               {provided.placeholder}
             </div>
           )}

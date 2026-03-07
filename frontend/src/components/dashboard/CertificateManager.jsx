@@ -1,133 +1,205 @@
-import React, { useState, useEffect } from 'react';
-import API from '../../api/axios';
+import React, { useCallback, useEffect, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import { Award, Edit2, GripVertical, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { Award, Plus, Trash2, Edit2, X, GripVertical } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import API from '../../api/axios';
+
+const emptyForm = {
+  name: '',
+  issuingOrganization: '',
+  issueDate: '',
+  verificationLink: '',
+  category: 'AI/ML',
+};
 
 const CertificateManager = () => {
   const [certs, setCerts] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  
-  const [formData, setFormData] = useState({
-    name: '', issuingOrganization: '', issueDate: '', 
-    verificationLink: '', category: 'AI/ML'
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
-  useEffect(() => { fetchCerts(); }, []);
+  const fetchCerts = useCallback(async () => {
+    try {
+      const { data } = await API.get('/data/certificates');
+      setCerts(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error('Failed to load certificates');
+    }
+  }, []);
 
-  const fetchCerts = async () => {
-    const { data } = await API.get('/data/certificates');
-    setCerts(data);
-  };
+  useEffect(() => {
+    fetchCerts();
+  }, [fetchCerts]);
 
   const handleOnDragEnd = async (result) => {
     if (!result.destination) return;
+
     const items = Array.from(certs);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    
+    const [moved] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, moved);
     setCerts(items);
+
     try {
       await API.put('/data/reorder', { type: 'certificates', items });
-    } catch (err) { console.error("Reorder failed"); }
+    } catch (error) {
+      toast.error('Reorder failed');
+      fetchCerts();
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     try {
       if (editingId) {
         await API.put(`/data/certificates/${editingId}`, formData);
-        toast.success("Certificate updated");
+        toast.success('Certificate updated');
       } else {
         await API.post('/data/certificates', formData);
-        toast.success("Certificate added");
+        toast.success('Certificate added');
       }
-      resetForm();
+
+      setFormData(emptyForm);
+      setEditingId(null);
+      setIsFormOpen(false);
       fetchCerts();
-    } catch (err) { toast.error("Operation failed"); }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Save failed');
+    }
   };
 
   const startEdit = (cert) => {
-    setFormData({ ...cert, issueDate: cert.issueDate.split('T')[0] });
+    setFormData({
+      name: cert.name || '',
+      issuingOrganization: cert.issuingOrganization || '',
+      issueDate: cert.issueDate ? cert.issueDate.split('T')[0] : '',
+      verificationLink: cert.verificationLink || '',
+      category: cert.category || 'AI/ML',
+    });
     setEditingId(cert._id);
     setIsFormOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({ name: '', issuingOrganization: '', issueDate: '', verificationLink: '', category: 'AI/ML' });
-    setEditingId(null);
-    setIsFormOpen(false);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this certificate?')) {
+      return;
+    }
+
+    try {
+      await API.delete(`/data/certificates/${id}`);
+      toast.info('Certificate removed');
+      fetchCerts();
+    } catch (error) {
+      toast.error('Delete failed');
+    }
   };
 
   return (
-    <div className="animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold flex items-center gap-2"><Award className="text-neon-pink" /> Certifications</h2>
-        <button onClick={() => setIsFormOpen(!isFormOpen)} className="bg-neon-pink px-4 py-2 rounded-lg font-bold">
-          {isFormOpen ? <X size={20}/> : <Plus size={20}/>}
+    <div>
+      <div className="mb-7 flex items-center justify-between">
+        <h2 className="inline-flex items-center gap-2 text-2xl font-semibold text-slate-100">
+          <Award className="text-cyan-200" size={22} /> Certifications
+        </h2>
+        <button
+          onClick={() => setIsFormOpen((prev) => !prev)}
+          className="inline-flex items-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950"
+          type="button"
+        >
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />} {isFormOpen ? 'Close' : 'Add'}
         </button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit} className="glass-card p-6 mb-8 grid md:grid-cols-2 gap-4">
-          <input placeholder="Certificate Name" className="bg-white/5 border border-white/10 p-3 rounded col-span-2 outline-none focus:border-neon-pink"
-            value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-          
-          <input placeholder="Issuing Organization" className="bg-white/5 border border-white/10 p-3 rounded outline-none focus:border-neon-pink"
-            value={formData.issuingOrganization} onChange={e => setFormData({...formData, issuingOrganization: e.target.value})} required />
-          
-          <select className="bg-white/5 border border-white/10 p-3 rounded"
-            value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+        <form onSubmit={handleSubmit} className="glass-card mb-8 grid gap-4 border-white/10 p-6 md:grid-cols-2">
+          <input
+            placeholder="Certificate Name"
+            className="col-span-2 rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            value={formData.name}
+            onChange={(event) => setFormData({ ...formData, name: event.target.value })}
+            required
+          />
+
+          <input
+            placeholder="Issuing Organization"
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            value={formData.issuingOrganization}
+            onChange={(event) => setFormData({ ...formData, issuingOrganization: event.target.value })}
+            required
+          />
+
+          <select
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            value={formData.category}
+            onChange={(event) => setFormData({ ...formData, category: event.target.value })}
+          >
             <option value="AI/ML">AI/ML</option>
             <option value="Kaggle">Kaggle</option>
             <option value="Research">Research</option>
             <option value="Professional">Professional</option>
+            <option value="Others">Others</option>
           </select>
 
-          <input type="date" className="bg-white/5 border border-white/10 p-3 rounded"
-            value={formData.issueDate} onChange={e => setFormData({...formData, issueDate: e.target.value})} required />
+          <input
+            type="date"
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            value={formData.issueDate}
+            onChange={(event) => setFormData({ ...formData, issueDate: event.target.value })}
+            required
+          />
 
-          <input placeholder="Verification Link" className="bg-white/5 border border-white/10 p-3 rounded outline-none focus:border-neon-pink"
-            value={formData.verificationLink} onChange={e => setFormData({...formData, verificationLink: e.target.value})} />
+          <input
+            placeholder="Verification URL"
+            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
+            value={formData.verificationLink}
+            onChange={(event) => setFormData({ ...formData, verificationLink: event.target.value })}
+          />
 
-          <button className="bg-neon-pink py-3 rounded-lg font-bold col-span-2 mt-2">
+          <button className="col-span-2 rounded-lg border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-950">
             {editingId ? 'Update Certificate' : 'Add Certificate'}
           </button>
         </form>
       )}
 
-      {/* DRAG AND DROP LIST */}
       <DragDropContext onDragEnd={handleOnDragEnd}>
         <Droppable droppableId="certs-list">
           {(provided) => (
             <div {...provided.droppableProps} ref={provided.innerRef} className="grid gap-4">
-              {certs.map((c, index) => (
-                <Draggable key={c._id} draggableId={c._id} index={index}>
-                  {(provided, snapshot) => (
-                    <div 
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      className={`glass-card p-5 flex justify-between items-center ${snapshot.isDragging ? 'border-neon-pink bg-white/5' : ''}`}
+              {certs.map((cert, index) => (
+                <Draggable key={cert._id} draggableId={cert._id} index={index}>
+                  {(draggableProvided, snapshot) => (
+                    <div
+                      ref={draggableProvided.innerRef}
+                      {...draggableProvided.draggableProps}
+                      className={`glass-card flex items-center justify-between gap-3 border-white/10 p-5 ${
+                        snapshot.isDragging ? 'border-cyan-300/60 bg-slate-900' : ''
+                      }`}
                     >
-                      <div className="flex items-center gap-4">
-                          {/* DRAG HANDLE */}
-                          <div {...provided.dragHandleProps} className="text-gray-500 hover:text-white cursor-grab">
-                            <GripVertical size={20} />
-                          </div>
-                          <div>
-                            <h4 className="font-bold text-lg">{c.name}</h4>
-                            <p className="text-gray-500 text-sm">{c.issuingOrganization} â€¢ {new Date(c.issueDate).toLocaleDateString()}</p>
-                          </div>
+                      <div className="flex items-start gap-3">
+                        <div {...draggableProvided.dragHandleProps} className="mt-1 cursor-grab text-slate-500 hover:text-slate-100">
+                          <GripVertical size={18} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-100">{cert.name}</p>
+                          <p className="text-xs text-slate-400">
+                            {cert.issuingOrganization} • {new Date(cert.issueDate).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex gap-3">
-                        <button onClick={() => startEdit(c)} className="p-2 text-gray-400 hover:text-white"><Edit2 size={16}/></button>
-                        <button onClick={async () => { if(window.confirm('Delete?')) { await API.delete(`/data/certificates/${c._id}`); fetchCerts(); } }} className="p-2 text-gray-400 hover:text-red-500"><Trash2 size={16}/></button>
+
+                      <div className="flex gap-2">
+                        <button onClick={() => startEdit(cert)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-cyan-200" type="button">
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(cert._id)} className="rounded-md p-2 text-slate-400 hover:bg-white/10 hover:text-red-400" type="button">
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   )}
                 </Draggable>
               ))}
+
+              {certs.length === 0 && <p className="text-sm text-slate-400">No certificates added yet.</p>}
               {provided.placeholder}
             </div>
           )}

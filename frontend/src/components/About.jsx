@@ -1,68 +1,71 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GraduationCap, Award, BookOpen } from 'lucide-react';
-import meImg from '../assets/me.jpg'; // Import the image
+import { Award, BookOpen, GraduationCap } from 'lucide-react';
+
+const MotionDiv = motion.div;
 
 const About = () => {
   const highlights = [
-    { icon: <GraduationCap />, title: 'Education', detail: 'BSc in CSE, IUBAT (CGPA 3.82)' },
-    { icon: <BookOpen />, title: 'Research', detail: '5+ Publications in ML/CV' },
-    { icon: <Award />, title: 'Leadership', detail: 'Founder & President, CollabCircle' },
+    { icon: <GraduationCap size={18} />, title: 'Education', detail: 'BSc in CSE, IUBAT (CGPA 3.82)' },
+    { icon: <BookOpen size={18} />, title: 'Research', detail: '7+ publications in ML and Computer Vision' },
+    { icon: <Award size={18} />, title: 'Leadership', detail: 'Founder and President, CollabCircle' },
   ];
 
   return (
-    <section id="about" className="py-24 px-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+    <section id="about" className="px-6 py-24 md:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
+          <MotionDiv
+            initial={{ opacity: 0, x: -24 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6 }}
             className="relative"
           >
-            {/* Professional Frame for Headshot */}
-            <div className="aspect-[4/5] glass-card overflow-hidden border-2 border-neon-pink/20 relative z-10 group">
-               <img 
-                 src={meImg} 
-                 alt="Shah Mohammad Rizvi" 
-                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-               />
-               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="glass-card overflow-hidden border-cyan-300/20 p-3">
+              <img
+                src="/smr_d.jpg"
+                alt="Shah Mohammad Rizvi portrait"
+                className="aspect-[4/5] w-full rounded-xl object-cover"
+                loading="lazy"
+              />
             </div>
-            <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-neon-pink/10 -z-0 rounded-2xl"></div>
-          </motion.div>
+            <div className="absolute -right-4 -top-4 hidden h-24 w-24 rounded-2xl border border-amber-200/25 bg-amber-200/10 lg:block" />
+          </MotionDiv>
 
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+          <MotionDiv
+            initial={{ opacity: 0, y: 22 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <h2 className="text-sm uppercase tracking-[0.3em] text-neon-pink font-semibold mb-2">Introduction</h2>
-            <h3 className="text-4xl font-bold mb-6">Driven by Data, <br/>Defined by <span className="text-neon-pink">Research.</span></h3>
-            <p className="text-gray-400 text-lg leading-relaxed mb-8">
-              I'm Shah Mohammad Rizvi. I am a CSE graduate (CGPA 3.82) focused on bridging 
-              the gap between sophisticated AI/ML research and scalable Full-Stack production systems.
-    
-              With a focus on "Intelligence + Implementation," I build RAG-powered LLM 
-              systems and Deep Learning models  while architecting robust 
-              web applications using the MERN stack. 
-    
-              As the founder of CollabCircle, I transform complex data into 
-              real-world tools-from sub-1ms inference Transformers to 
-              real-time event-driven platforms. I am a lifelong learner 
-              committed to technical excellence and delivering measurable product impact.
+            <p className="mb-2 text-xs uppercase tracking-[0.24em] text-cyan-200">Introduction</p>
+            <h2 className="section-title font-serif text-4xl md:text-5xl">
+              Research mindset,
+              <span className="block text-cyan-200">production execution.</span>
+            </h2>
+
+            <p className="mt-6 text-sm leading-relaxed text-slate-300 md:text-base">
+              I design and deploy AI systems that solve practical problems. My focus spans model experimentation,
+              data-centric pipelines, and scalable MERN-based interfaces. I prioritize clean architecture, measurable
+              outcomes, and communication that keeps engineering teams aligned.
             </p>
 
-            <div className="grid gap-4">
-              {highlights.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-4 glass-card p-4 hover:border-neon-pink/40 transition-colors">
-                  <div className="text-neon-pink">{item.icon}</div>
+            <div className="mt-8 grid gap-3">
+              {highlights.map((item) => (
+                <div
+                  key={item.title}
+                  className="glass-card flex items-center gap-3 border-white/10 p-4 transition hover:border-cyan-300/35"
+                >
+                  <div className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 p-2 text-cyan-200">{item.icon}</div>
                   <div>
-                    <h4 className="font-bold text-sm">{item.title}</h4>
-                    <p className="text-xs text-gray-500">{item.detail}</p>
+                    <h3 className="text-sm font-semibold text-slate-100">{item.title}</h3>
+                    <p className="text-xs text-slate-400">{item.detail}</p>
                   </div>
                 </div>
               ))}
             </div>
-          </motion.div>
+          </MotionDiv>
         </div>
       </div>
     </section>

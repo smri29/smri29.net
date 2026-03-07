@@ -1,90 +1,106 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-scroll';
-import { Menu, X, Download } from 'lucide-react';
+import { Download, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 32);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // UPDATED: The exact order you requested (Essential items only)
-  const links = [
-    { name: 'About', to: 'about' },
-    { name: 'Experience', to: 'experience' },
-    { name: 'Projects', to: 'projects' },
-    { name: 'Skills', to: 'skills' },
-    { name: 'Certifications', to: 'certifications' },
-    { name: 'Contact', to: 'contact' }
-  ];
+  const links = useMemo(
+    () => [
+      { name: 'About', to: 'about' },
+      { name: 'Experience', to: 'experience' },
+      { name: 'Projects', to: 'projects' },
+      { name: 'Research', to: 'research' },
+      { name: 'Skills', to: 'skills' },
+      { name: 'Certifications', to: 'certifications' },
+      { name: 'Hobbies', to: 'hobbies' },
+      { name: 'Contact', to: 'contact' },
+    ],
+    []
+  );
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-black/70 backdrop-blur-md py-4' : 'bg-transparent py-6'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <div 
-          className="text-xl font-bold cursor-pointer text-white hover:text-neon-pink transition-colors"
+    <nav
+      className={`fixed inset-x-0 top-0 z-50 border-b transition-all duration-300 ${
+        scrolled
+          ? 'border-white/10 bg-slate-950/80 py-3 backdrop-blur-xl'
+          : 'border-transparent bg-transparent py-5'
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 md:px-8">
+        <button
+          className="group inline-flex items-center gap-3 text-left"
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          type="button"
+          aria-label="Scroll to top"
         >
-          Shah Mohammad Rizvi
-        </div>
+          <img src="/smr.svg" alt="SMR mark" className="h-8 w-8 rounded-md border border-cyan-300/30 bg-slate-900/60 p-1" />
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.25em] text-cyan-300/80">Portfolio</p>
+            <p className="font-serif text-lg text-slate-100 group-hover:text-cyan-200">Shah Mohammad Rizvi</p>
+          </div>
+        </button>
 
-        {/* Desktop Menu */}
-        <div className="hidden lg:flex gap-8">
-          {links.map(link => (
-            <Link 
-              key={link.to} 
-              to={link.to} 
-              smooth={true} 
-              spy={true} 
-              offset={-70} 
-              className="text-gray-400 hover:text-neon-pink cursor-pointer transition-colors text-sm font-medium"
+        <div className="hidden items-center gap-6 xl:flex">
+          {links.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              smooth
+              spy
+              offset={-80}
+              className="cursor-pointer text-sm font-medium text-slate-300 transition-colors hover:text-cyan-300"
+              activeClass="text-cyan-300"
             >
               {link.name}
             </Link>
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
-          <a 
-            href="/cv.pdf" 
+        <div className="flex items-center gap-3">
+          <a
+            href="/cv.pdf"
             download="Shah_Mohammad_Rizvi_CV.pdf"
-            className="hidden md:flex items-center gap-2 px-5 py-2 bg-neon-pink rounded-full text-sm font-bold hover:scale-105 transition-transform text-white"
+            className="hidden items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-bold uppercase tracking-wide text-cyan-200 transition hover:border-cyan-300 hover:bg-cyan-300 hover:text-slate-950 md:inline-flex"
           >
-            <Download size={16} /> Download CV
+            <Download size={14} />
+            Resume
           </a>
-          
-          <button className="lg:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <X /> : <Menu />}
+
+          <button
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/20 text-slate-200 transition hover:border-cyan-300/60 hover:text-cyan-300 xl:hidden"
+            onClick={() => setIsOpen((prev) => !prev)}
+            type="button"
+            aria-label="Toggle navigation menu"
+          >
+            {isOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 w-full bg-black/95 backdrop-blur-lg border-b border-white/10 p-6 flex flex-col gap-6 lg:hidden">
-            {links.map(link => (
-            <Link 
-                key={link.to} 
-                to={link.to} 
-                smooth={true} 
-                offset={-70} 
+        <div className="border-t border-white/10 bg-slate-950/95 px-6 py-5 backdrop-blur-xl xl:hidden">
+          <div className="grid gap-4">
+            {links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                smooth
+                offset={-74}
                 onClick={() => setIsOpen(false)}
-                className="text-gray-300 text-lg hover:text-neon-pink cursor-pointer"
-            >
-              {link.name}
-            </Link>
-          ))}
-           <a 
-             href="/cv.pdf" 
-             download="Shah_Mohammad_Rizvi_CV.pdf"
-             className="flex justify-center items-center gap-2 px-5 py-3 bg-neon-pink rounded-lg text-sm font-bold text-white"
-            >
-            <Download size={16} /> Download CV
-          </a>
+                className="cursor-pointer rounded-lg border border-transparent px-3 py-2 text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-200"
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </nav>

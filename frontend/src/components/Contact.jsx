@@ -1,62 +1,118 @@
 import React, { useState } from 'react';
 import API from '../api/axios';
 import { toast } from 'react-toastify';
-import { Mail, Linkedin, Github } from 'lucide-react';
+import { Github, Linkedin, Mail, Send } from 'lucide-react';
 
 const Contact = () => {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSending(true);
+
     try {
       await API.post('/data/contact', form);
-      toast.success("Thank you! I will get back to you shortly.");
+      toast.success('Thanks for reaching out. I will respond shortly.');
       setForm({ name: '', email: '', message: '' });
-    } catch {
-      toast.error("Something went wrong. Please try again.");
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Could not send message. Please try again.');
+    } finally {
+      setSending(false);
     }
   };
 
   return (
-    <section id="contact" className="py-24 px-6">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12">
-        <div>
-          <h2 className="text-4xl font-bold mb-6">Let's <span className="text-neon-pink">Connect</span></h2>
-          <p className="text-gray-400 mb-8">
-            I am currently open to Internships, Research Assistant roles, or Junior Developer positions. 
-            Whether you have a question or just want to say hi, my inbox is always open.
+    <section id="contact" className="px-6 py-24 md:px-8">
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_1.2fr]">
+        <div className="glass-card border-white/10 p-8">
+          <h2 className="section-title font-serif text-4xl">
+            Let&apos;s <span className="text-cyan-200">Connect</span>
+          </h2>
+          <p className="mt-4 text-sm leading-relaxed text-slate-300">
+            I am open to AI/ML internships, research collaboration, and full-stack engineering opportunities.
+            Share your idea or role details and I will follow up.
           </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 text-gray-300">
-              <Mail className="text-neon-pink" size={20} />
-              <span>smri29.ml@gmail.com</span>
-            </div>
-            <div className="flex gap-4 pt-4">
-               <a href="https://linkedin.com" className="p-3 glass-card hover:text-neon-pink transition-all"><Linkedin size={20}/></a>
-               <a href="https://github.com" className="p-3 glass-card hover:text-neon-pink transition-all"><Github size={20}/></a>
+
+          <div className="mt-8 space-y-4 text-sm text-slate-300">
+            <a
+              href="mailto:smri29.ml@gmail.com"
+              className="inline-flex items-center gap-3 rounded-lg border border-white/10 px-4 py-3 transition hover:border-cyan-300/40 hover:text-cyan-200"
+            >
+              <Mail size={16} className="text-cyan-300" />
+              smri29.ml@gmail.com
+            </a>
+
+            <div className="flex items-center gap-3 pt-2">
+              <a
+                href="https://www.linkedin.com/in/smri29"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg border border-white/10 p-3 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                aria-label="LinkedIn"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                href="https://github.com/smri29"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg border border-white/10 p-3 transition hover:border-cyan-300/40 hover:text-cyan-200"
+                aria-label="GitHub"
+              >
+                <Github size={18} />
+              </a>
             </div>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="glass-card p-8 space-y-4">
-          <input 
-            type="text" placeholder="Name" 
-            className="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none focus:border-neon-pink"
-            onChange={e => setForm({...form, name: e.target.value})} value={form.name} required
-          />
-          <input 
-            type="email" placeholder="Email" 
-            className="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none focus:border-neon-pink"
-            onChange={e => setForm({...form, email: e.target.value})} value={form.email} required
-          />
-          <textarea 
-            placeholder="Message" rows="5" 
-            className="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none focus:border-neon-pink"
-            onChange={e => setForm({...form, message: e.target.value})} value={form.message} required
-          ></textarea>
-          <button className="w-full bg-neon-pink py-3 rounded-lg font-bold hover:shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all">
-            Send Message
-          </button>
+        <form onSubmit={handleSubmit} className="glass-card border-white/10 p-8">
+          <div className="grid gap-4">
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Name</span>
+              <input
+                type="text"
+                className="rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
+                value={form.name}
+                required
+                maxLength={120}
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Email</span>
+              <input
+                type="email"
+                className="rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                onChange={(event) => setForm({ ...form, email: event.target.value })}
+                value={form.email}
+                required
+                maxLength={160}
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Message</span>
+              <textarea
+                rows="6"
+                className="rounded-lg border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                onChange={(event) => setForm({ ...form, message: event.target.value })}
+                value={form.message}
+                required
+                maxLength={3000}
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={sending}
+              className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 py-3 text-sm font-bold uppercase tracking-wide text-slate-950 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <Send size={15} />
+              {sending ? 'Sending...' : 'Send Message'}
+            </button>
+          </div>
         </form>
       </div>
     </section>

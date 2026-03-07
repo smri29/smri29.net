@@ -4,47 +4,58 @@ import { Cpu } from 'lucide-react';
 
 const Skills = () => {
   const [skillCategories, setSkillCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSkills = async () => {
       try {
         const { data } = await API.get('/data/skills');
-        setSkillCategories(data);
-      } catch (err) {
-        console.error("Failed to load skills", err);
+        setSkillCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Failed to load skills', error);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchSkills();
   }, []);
 
   return (
-    <section id="skills" className="py-24 px-6 border-t border-white/5 bg-black/40 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto text-white">
-        {/* HEADER - Updated to Left Align with Icon */}
-        <div className="flex items-center gap-3 mb-12">
-           <Cpu className="text-neon-pink" size={32} />
-           <h2 className="text-3xl font-bold">Technical <span className="text-neon-pink">Proficiency</span></h2>
+    <section id="skills" className="border-t border-white/5 bg-slate-950/35 px-6 py-24 backdrop-blur-sm md:px-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-12 flex items-center gap-3">
+          <Cpu className="text-cyan-300" size={28} />
+          <h2 className="section-title">
+            Technical <span className="text-cyan-200">Proficiency</span>
+          </h2>
         </div>
-        
-        {skillCategories.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+        {loading ? (
+          <p className="text-sm text-slate-400">Loading skills...</p>
+        ) : skillCategories.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {skillCategories.map((cat) => (
-              <div key={cat._id} className="glass-card p-8 border-t-4 border-t-neon-pink/50 flex flex-col h-full hover:bg-white/5 transition-colors">
-                <h3 className="text-xl font-bold mb-6">{cat.category}</h3>
+              <article
+                key={cat._id}
+                className="glass-card flex h-full flex-col border-white/10 p-6 transition hover:-translate-y-1 hover:border-cyan-300/30"
+              >
+                <h3 className="mb-5 text-xl font-semibold text-slate-100">{cat.category}</h3>
                 <div className="flex flex-wrap gap-2 content-start">
-                  {cat.skillsList.map(skill => (
-                    <span key={skill} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-sm text-gray-300 hover:border-neon-pink/50 transition-colors cursor-default">
+                  {(cat.skillsList || []).map((skill, idx) => (
+                    <span
+                      key={`${skill}-${idx}`}
+                      className="rounded-full border border-white/15 bg-slate-800/60 px-3 py-1 text-xs text-slate-200"
+                    >
                       {skill}
                     </span>
                   ))}
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         ) : (
-          <div className="text-center text-gray-500 italic">
-            Skills are loading or haven't been added to the dashboard yet.
-          </div>
+          <p className="text-sm italic text-slate-400">Skills have not been added yet.</p>
         )}
       </div>
     </section>

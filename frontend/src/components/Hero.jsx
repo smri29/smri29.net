@@ -2,99 +2,120 @@ import React from 'react';
 import { Typewriter } from 'react-simple-typewriter';
 import { motion } from 'framer-motion';
 import { Link } from 'react-scroll';
-import { ArrowDown, Github, Linkedin, Brain } from 'lucide-react';
+import { ArrowDown, Brain, Github, Linkedin } from 'lucide-react';
+
+const MotionSection = motion.section;
+const MotionDiv = motion.div;
 
 const Hero = () => {
   return (
-    <section id="hero" className="relative min-h-screen h-[100svh] flex flex-col items-center justify-center px-4 sm:px-6 pt-20 overflow-hidden">
-      
-      <motion.div 
-        initial={{ opacity: 0, y: 30 }}
+    <MotionSection
+      id="hero"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+      className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 pb-16 pt-24 md:px-8"
+    >
+      <div className="pointer-events-none absolute inset-0 subtle-grid opacity-20" />
+      <MotionDiv
+        initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-center max-w-4xl mx-auto z-10 w-full"
+        transition={{ duration: 0.8, ease: 'easeOut' }}
+        className="relative z-10 mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center"
       >
-        {/* Status Badge */}
-        <div className="mb-6 md:mb-8 inline-block">
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-neon-pink/30 bg-neon-pink/5 backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-neon-pink animate-pulse"></span>
-            <span className="text-[10px] font-mono text-neon-pink tracking-[0.2em] uppercase">Open to Work</span>
+        <div>
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-[11px] uppercase tracking-[0.26em] text-cyan-200">
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse" />
+            Open to Entry-Level Software & AI/ML Roles
+          </div>
+
+          <h1 className="font-serif text-5xl leading-[0.95] tracking-tight text-slate-100 sm:text-6xl md:text-7xl">
+            Shah Mohammad
+            <span className="block bg-gradient-to-r from-cyan-200 via-cyan-300 to-amber-200 bg-clip-text text-transparent">
+              Rizvi
+            </span>
+          </h1>
+
+          <p className="mt-6 h-8 text-base text-slate-300 md:text-xl">
+            <Typewriter
+              words={['AI/ML Engineer', 'Researcher', 'Full-Stack Developer', 'Founder, CollabCircle']}
+              loop={0}
+              cursor
+              cursorStyle="_"
+              typeSpeed={54}
+              deleteSpeed={30}
+              delaySpeed={1800}
+            />
+          </p>
+
+          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
+            Building production-grade intelligence systems from model design to deployment. I focus on computer vision,
+            practical deep learning, and reliable web platforms that create measurable impact.
+          </p>
+
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link
+              to="projects"
+              smooth
+              offset={-72}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300 px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:scale-[1.02]"
+            >
+              Explore Projects
+              <ArrowDown size={14} />
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <a
+                href="https://github.com/smri29"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-white/15 p-2.5 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-200"
+                title="GitHub"
+              >
+                <Github size={18} />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/smri29"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-white/15 p-2.5 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-200"
+                title="LinkedIn"
+              >
+                <Linkedin size={18} />
+              </a>
+              <a
+                href="https://www.kaggle.com/shahmohammadrizvi"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-white/15 p-2.5 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-200"
+                title="Kaggle"
+              >
+                <Brain size={18} />
+              </a>
+            </div>
           </div>
         </div>
 
-        {/* Name - Responsive Sizing & Wrapping */}
-        <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl font-bold leading-tight mb-4 md:mb-6 text-white tracking-tight">
-          Shah Mohammad <br className="md:hidden" /> 
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-pink via-purple-500 to-white">
-            Rizvi
-          </span>
-        </h1>
-
-        {/* Typewriter Role */}
-        <div className="text-base sm:text-lg md:text-2xl text-gray-400 font-light mb-6 md:mb-8 h-8 font-mono">
-          <Typewriter
-            words={['AI/ML Engineer', 'Researcher', 'Full Stack Developer', 'Founder of CollabCircle']}
-            loop={0}
-            cursor
-            cursorStyle='_'
-            typeSpeed={50}
-            deleteSpeed={30}
-            delaySpeed={2000}
-          />
-        </div>
-
-        {/* Mission Statement */}
-        <p className="text-sm md:text-base text-gray-500 max-w-2xl mx-auto leading-relaxed mb-8 md:mb-10 px-2">
-          Bridging the gap between academic research and production engineering. 
-          Specializing in Computer Vision, Deep Learning, and Scalable Web Systems.
-        </p>
-
-        {/* Social Icons */}
-        <div className="flex items-center justify-center gap-6 md:gap-8 mb-8 md:mb-10">
-          <a 
-            href="https://github.com" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="text-gray-500 hover:text-white hover:scale-110 transition-all duration-300" 
-            title="GitHub"
-          >
-            <Github size={24}/>
-          </a>
-          <a 
-            href="https://linkedin.com" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="text-gray-500 hover:text-white hover:scale-110 transition-all duration-300" 
-            title="LinkedIn"
-          >
-            <Linkedin size={24}/>
-          </a>
-          <a 
-            href="https://www.kaggle.com/shahmohammadrizvi" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="text-gray-500 hover:text-white hover:scale-110 transition-all duration-300" 
-            title="Kaggle"
-          >
-            <Brain size={24}/>
-          </a>
-        </div>
-
-        {/* CTA Button */}
-        <div>
-          <Link 
-            to="projects" 
-            smooth={true} 
-            offset={-50} 
-            className="group px-6 md:px-8 py-3 bg-white text-black font-serif font-bold text-xs md:text-sm tracking-wider hover:bg-neon-pink hover:text-white transition-all inline-flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(236,72,153,0.4)] rounded-sm"
-          >
-            View Projects <ArrowDown size={16} className="group-hover:translate-y-1 transition-transform"/>
-          </Link>
-        </div>
-
-      </motion.div>
-
-    </section>
+        <MotionDiv
+          initial={{ opacity: 0, scale: 0.94 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.15 }}
+          className="relative mx-auto w-full max-w-sm"
+        >
+          <div className="glass-card overflow-hidden border-cyan-300/20 p-3">
+            <img
+              src="/smr.jpg"
+              alt="Shah Mohammad Rizvi"
+              className="aspect-[4/5] w-full rounded-xl object-cover"
+              loading="eager"
+            />
+          </div>
+          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-amber-200/30 bg-amber-200/10 px-4 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">
+            AI + Engineering
+          </div>
+        </MotionDiv>
+      </MotionDiv>
+    </MotionSection>
   );
 };
 

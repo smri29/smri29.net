@@ -1,35 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  background-color: #0a0a0a;
-  color: white;
+  background: #070b12;
+  color: #e2e8f0;
   scroll-behavior: smooth;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Manrope, sans-serif;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(34, 211, 238, 0.14), transparent 40%),
+    radial-gradient(circle at 82% 12%, rgba(245, 158, 11, 0.12), transparent 34%),
+    linear-gradient(180deg, #050913 0%, #070b12 40%, #04070e 100%);
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    @apply rounded-2xl border border-white/10 bg-slate-900/50 backdrop-blur-xl;
+    box-shadow: 0 14px 40px rgba(2, 6, 23, 0.45);
   }
-  
-  .neon-border {
-    @apply border border-neon-pink/30 hover:border-neon-pink transition-colors duration-300;
+
+  .section-title {
+    @apply text-3xl font-bold tracking-tight text-slate-100 md:text-4xl;
+  }
+
+  .subtle-grid {
+    background-image:
+      linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-size: 28px 28px;
   }
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #0a0a0a;
+  background: #060910;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #222;
+  background: #1e293b;
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #ec4899;
+  background: #22d3ee;
 }

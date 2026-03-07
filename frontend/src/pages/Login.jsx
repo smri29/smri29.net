@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api/axios';
 import { toast } from 'react-toastify';
+import API from '../api/axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+
     try {
       const { data } = await API.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
@@ -17,39 +26,53 @@ const Login = () => {
       toast.success(`Welcome back, ${data.name}`);
       navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed");
+      toast.error(error.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6">
-      <div className="glass-card p-10 w-full max-w-md border-t-4 border-neon-pink">
-        <h2 className="text-3xl font-bold mb-2">Admin <span className="text-neon-pink">Login</span></h2>
-        <p className="text-gray-500 text-sm mb-8">Access the portfolio management console.</p>
-        
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">Email Address</label>
-            <input 
-              type="email" 
-              className="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none focus:border-neon-pink transition-all"
-              onChange={(e) => setEmail(e.target.value)} 
-              required 
-            />
-          </div>
-          <div>
-            <label className="block text-xs uppercase tracking-widest text-gray-400 mb-2">Password</label>
-            <input 
-              type="password" 
-              className="w-full bg-white/5 border border-white/10 p-3 rounded-lg outline-none focus:border-neon-pink transition-all"
-              onChange={(e) => setPassword(e.target.value)} 
-              required 
-            />
-          </div>
-          <button className="w-full bg-neon-pink py-3 rounded-lg font-bold hover:shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all mt-4">
-            Authorize
-          </button>
-        </form>
+    <div className="min-h-screen bg-dark-bg px-6 py-16 text-slate-100">
+      <div className="mx-auto max-w-md">
+        <div className="glass-card border-cyan-300/25 p-8 md:p-10">
+          <h1 className="font-serif text-3xl text-slate-100">
+            Admin <span className="text-cyan-200">Access</span>
+          </h1>
+          <p className="mt-2 text-sm text-slate-400">Portfolio content management dashboard.</p>
+
+          <form onSubmit={handleLogin} className="mt-8 space-y-5">
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Email</span>
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="rounded-lg border border-white/10 bg-slate-900/60 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                required
+              />
+            </label>
+
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Password</span>
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="rounded-lg border border-white/10 bg-slate-900/60 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                required
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wider text-slate-950 transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {loading ? 'Authorizing...' : 'Authorize'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
