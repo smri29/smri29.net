@@ -24,6 +24,10 @@ const certificateSchema = new mongoose.Schema({
     enum: ['AI/ML', 'Kaggle', 'Research', 'Professional', 'Others'],
     required: true
   },
+  featuredOnHome: {
+    type: Boolean,
+    default: false
+  },
   // --- NEW FIELD FOR REORDERING ---
   order: {
     type: Number,

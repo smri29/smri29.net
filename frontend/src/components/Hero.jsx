@@ -1,22 +1,54 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Typewriter } from 'react-simple-typewriter';
 import { motion } from 'framer-motion';
 import { Link } from 'react-scroll';
 import { ArrowDown, Brain, Github, Linkedin } from 'lucide-react';
+import API from '../api/axios';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
 
+const FALLBACK_HERO = {
+  availabilityText: 'Open to Entry-Level Software & AI/ML Roles',
+  roleTitles: ['AI/ML Engineer', 'Researcher', 'Full-Stack Developer', 'Founder, CollabCircle'],
+  summary:
+    'Building production-grade intelligence systems from model design to deployment. I focus on computer vision, practical deep learning, and reliable web platforms that create measurable impact.',
+};
+
 const Hero = () => {
+  const [content, setContent] = useState(FALLBACK_HERO);
+
+  useEffect(() => {
+    const fetchHeroContent = async () => {
+      try {
+        const { data } = await API.get('/data/hero');
+        setContent({
+          availabilityText: data?.availabilityText || FALLBACK_HERO.availabilityText,
+          roleTitles:
+            Array.isArray(data?.roleTitles) && data.roleTitles.length > 0
+              ? data.roleTitles
+              : FALLBACK_HERO.roleTitles,
+          summary: data?.summary || FALLBACK_HERO.summary,
+        });
+      } catch (error) {
+        console.error('Failed to load hero content', error);
+      }
+    };
+
+    fetchHeroContent();
+  }, []);
+
   return (
     <MotionSection
       id="hero"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 pb-16 pt-24 md:px-8"
+      className="zone-olive relative flex min-h-screen items-center justify-center overflow-hidden px-5 pb-16 pt-24 md:px-8"
     >
       <div className="pointer-events-none absolute inset-0 subtle-grid opacity-20" />
+      <div className="pointer-events-none absolute left-[8%] top-[16%] h-32 w-32 rounded-full border border-cyan-300/10 bg-cyan-300/10 blur-2xl" />
+      <div className="pointer-events-none absolute bottom-[12%] right-[10%] h-28 w-28 rounded-full border border-amber-200/10 bg-amber-200/10 blur-2xl" />
       <MotionDiv
         initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
@@ -24,41 +56,68 @@ const Hero = () => {
         className="relative z-10 mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center"
       >
         <div>
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-[11px] uppercase tracking-[0.26em] text-cyan-200">
+          <MotionDiv
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.08 }}
+            className="section-kicker mb-5"
+          >
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse" />
-            Open to Entry-Level Software & AI/ML Roles
-          </div>
+            {content.availabilityText}
+          </MotionDiv>
 
-          <h1 className="font-serif text-5xl leading-[0.95] tracking-tight text-slate-100 sm:text-6xl md:text-7xl">
-            Shah Mohammad
-            <span className="block bg-gradient-to-r from-cyan-200 via-cyan-300 to-amber-200 bg-clip-text text-transparent">
-              Rizvi
-            </span>
-          </h1>
+          <MotionDiv
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.15 }}
+          >
+            <h1 className="font-serif text-5xl leading-[0.95] tracking-tight text-slate-100 sm:text-6xl md:text-7xl">
+              Shah Mohammad
+              <span className="block bg-gradient-to-r from-cyan-200 via-cyan-300 to-amber-200 bg-clip-text text-transparent">
+                Rizvi
+              </span>
+            </h1>
+          </MotionDiv>
 
-          <p className="mt-6 h-8 text-base text-slate-300 md:text-xl">
-            <Typewriter
-              words={['AI/ML Engineer', 'Researcher', 'Full-Stack Developer', 'Founder, CollabCircle']}
-              loop={0}
-              cursor
-              cursorStyle="_"
-              typeSpeed={54}
-              deleteSpeed={30}
-              delaySpeed={1800}
-            />
-          </p>
+          <MotionDiv
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.22 }}
+          >
+            <p className="mt-6 h-8 text-base text-slate-300 md:text-xl">
+              <Typewriter
+                words={content.roleTitles}
+                loop={0}
+                cursor
+                cursorStyle="_"
+                typeSpeed={54}
+                deleteSpeed={30}
+                delaySpeed={1800}
+              />
+            </p>
+          </MotionDiv>
 
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
-            Building production-grade intelligence systems from model design to deployment. I focus on computer vision,
-            practical deep learning, and reliable web platforms that create measurable impact.
-          </p>
+          <MotionDiv
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.3 }}
+          >
+            <p className="mt-6 max-w-2xl text-sm leading-relaxed text-slate-400 md:text-base">
+              {content.summary}
+            </p>
+          </MotionDiv>
 
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <MotionDiv
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.38 }}
+            className="mt-8 flex flex-wrap items-center gap-4"
+          >
             <Link
               to="projects"
               smooth
               offset={-72}
-              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300 px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-950 transition hover:scale-[1.02]"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300 px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-950 shadow-[0_14px_36px_rgba(34,211,238,0.18)] transition hover:scale-[1.02]"
             >
               Explore Projects
               <ArrowDown size={14} />
@@ -69,7 +128,7 @@ const Hero = () => {
                 href="https://github.com/smri29"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-white/15 p-2.5 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-200"
+                className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
                 title="GitHub"
               >
                 <Github size={18} />
@@ -78,7 +137,7 @@ const Hero = () => {
                 href="https://www.linkedin.com/in/smri29"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-white/15 p-2.5 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-200"
+                className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
                 title="LinkedIn"
               >
                 <Linkedin size={18} />
@@ -87,13 +146,13 @@ const Hero = () => {
                 href="https://www.kaggle.com/shahmohammadrizvi"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full border border-white/15 p-2.5 text-slate-300 transition hover:border-cyan-300/60 hover:text-cyan-200"
+                className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
                 title="Kaggle"
               >
                 <Brain size={18} />
               </a>
             </div>
-          </div>
+          </MotionDiv>
         </div>
 
         <MotionDiv
@@ -102,16 +161,14 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.15 }}
           className="relative mx-auto w-full max-w-sm"
         >
-          <div className="glass-card overflow-hidden border-cyan-300/20 p-3">
+          <div className="pointer-events-none absolute inset-4 rounded-[28px] bg-gradient-to-br from-cyan-300/15 via-transparent to-amber-200/10 blur-2xl" />
+          <div className="glass-card card-sheen animate-float overflow-hidden border-cyan-300/20 p-3">
             <img
               src="/smr.jpg"
               alt="Shah Mohammad Rizvi"
               className="aspect-[4/5] w-full rounded-xl object-cover"
               loading="eager"
             />
-          </div>
-          <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full border border-amber-200/30 bg-amber-200/10 px-4 py-1 text-[11px] uppercase tracking-[0.22em] text-amber-100">
-            AI + Engineering
           </div>
         </MotionDiv>
       </MotionDiv>

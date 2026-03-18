@@ -35,6 +35,16 @@ const projectSchema = new mongoose.Schema({
     type: String,
     trim: true
   }],
+  imageUrl: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  imagePublicId: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   // --- NEW FIELD FOR REORDERING ---
   order: {
     type: Number,

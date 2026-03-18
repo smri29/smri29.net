@@ -1,16 +1,78 @@
-# React + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This frontend is the public portfolio and admin dashboard client for Shah Mohammad Rizvi.
 
-Currently, two official plugins are available:
+Live site: [https://smri29net.vercel.app/](https://smri29net.vercel.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Frontend Features
 
-## React Compiler
+- polished portfolio landing page
+- section-based storytelling for hero, intro, experience, projects, research, skills, certificates, education, hobbies, and contact
+- protected admin dashboard for full portfolio management
+- dedicated certifications page
+- responsive navigation and layout
+- subtle motion using Framer Motion
+- AI chat widget branded as `RAI`
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Screenshots
 
-## Expanding the ESLint configuration
+### Hero Section
+![Portfolio hero](public/ss/portfolio%20first%20section.png)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Introduction Section
+![Portfolio introduction](public/ss/portfolio%20intro%20section.png)
+
+### Contact Section
+![Portfolio contact](public/ss/portfolio%20contact%20section.png)
+
+## Tech Stack
+
+- React
+- Vite
+- Tailwind CSS
+- Framer Motion
+- Axios
+- React Router
+- React Toastify
+
+## Project Structure
+
+```text
+frontend/
+|-- public/
+|   `-- ss/
+|-- src/
+|   |-- api/
+|   |-- assets/
+|   |-- components/
+|   `-- pages/
+|-- package.json
+`-- README.md
+```
+
+## Local Development
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Available Scripts
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
+```
+
+## Environment / API
+
+The frontend uses the shared Axios client in `src/api/axios.js` to communicate with the backend API.
+
+For local development, make sure the backend is running and that the backend `FRONTEND_URL` matches your local frontend URL.
+
+## Deployment
+
+This frontend is intended to run on Vercel.

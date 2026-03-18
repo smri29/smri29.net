@@ -8,7 +8,7 @@ const researchSchema = new mongoose.Schema({
   },
   abstract: {
     type: String,
-    required: [true, 'Abstract is required']
+    default: ''
   },
   type: {
     type: String,

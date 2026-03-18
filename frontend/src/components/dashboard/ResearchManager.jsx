@@ -1,17 +1,78 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { Edit2, GripVertical, Plus, Trash2, X } from 'lucide-react';
+import { CalendarDays, Edit2, GripVertical, Plus, Trash2, X } from 'lucide-react';
 import { toast } from 'react-toastify';
 import API from '../../api/axios';
 
 const emptyForm = {
   title: '',
-  abstract: '',
   type: 'Journal',
   publicationName: '',
-  publicationDate: '',
+  publicationDay: '',
+  publicationMonth: '',
+  publicationYear: '',
   doiLink: '',
   authors: '',
+};
+
+const MONTH_OPTIONS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+const YEAR_OPTIONS = Array.from({ length: 61 }, (_, index) => String(new Date().getFullYear() - index));
+
+const formatPublicationDate = (value) => {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(date);
+};
+
+const getDaysInMonth = (year, month) => {
+  if (!year || !month) {
+    return 31;
+  }
+
+  return new Date(Number(year), Number(month), 0).getDate();
+};
+
+const toDateValue = (year, month, day) => {
+  if (!year || !month || !day) {
+    return '';
+  }
+
+  return `${year}-${month}-${day}`;
+};
+
+const splitDateValue = (value) => {
+  if (!value) {
+    return { day: '', month: '', year: '' };
+  }
+
+  const [year = '', month = '', day = ''] = String(value).slice(0, 10).split('-');
+  return { day, month, year };
 };
 
 const ResearchManager = () => {
@@ -33,6 +94,12 @@ const ResearchManager = () => {
     fetchPapers();
   }, [fetchPapers]);
 
+  const resetForm = () => {
+    setFormData(emptyForm);
+    setEditingId(null);
+    setIsFormOpen(false);
+  };
+
   const handleOnDragEnd = async (result) => {
     if (!result.destination) return;
 
@@ -52,8 +119,18 @@ const ResearchManager = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    const publicationDate = toDateValue(
+      formData.publicationYear,
+      formData.publicationMonth,
+      formData.publicationDay
+    );
+
     const payload = {
-      ...formData,
+      title: formData.title.trim(),
+      type: formData.type,
+      publicationName: formData.publicationName.trim(),
+      publicationDate,
+      doiLink: formData.doiLink.trim(),
       authors: formData.authors
         .split(',')
         .map((author) => author.trim())
@@ -69,9 +146,7 @@ const ResearchManager = () => {
         toast.success('Publication added');
       }
 
-      setFormData(emptyForm);
-      setEditingId(null);
-      setIsFormOpen(false);
+      resetForm();
       fetchPapers();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Save failed');
@@ -79,12 +154,15 @@ const ResearchManager = () => {
   };
 
   const startEdit = (paper) => {
+    const publicationDateParts = splitDateValue(paper.publicationDate);
+
     setFormData({
       title: paper.title || '',
-      abstract: paper.abstract || '',
       type: paper.type || 'Journal',
       publicationName: paper.publicationName || '',
-      publicationDate: paper.publicationDate ? paper.publicationDate.split('T')[0] : '',
+      publicationDay: publicationDateParts.day,
+      publicationMonth: publicationDateParts.month,
+      publicationYear: publicationDateParts.year,
       doiLink: paper.doiLink || '',
       authors: Array.isArray(paper.authors) ? paper.authors.join(', ') : '',
     });
@@ -106,77 +184,170 @@ const ResearchManager = () => {
     }
   };
 
+  const publicationDayOptions = Array.from(
+    { length: getDaysInMonth(formData.publicationYear, formData.publicationMonth) },
+    (_, index) => String(index + 1).padStart(2, '0')
+  );
+
   return (
     <div>
       <div className="mb-7 flex items-center justify-between">
         <h2 className="text-2xl font-semibold text-slate-100">Research Publications</h2>
         <button
-          onClick={() => setIsFormOpen((prev) => !prev)}
+          onClick={() => {
+            if (isFormOpen && !editingId) {
+              resetForm();
+              return;
+            }
+
+            setIsFormOpen((prev) => !prev);
+            if (isFormOpen && editingId) {
+              resetForm();
+            }
+          }}
           className="inline-flex items-center gap-2 rounded-lg border border-cyan-300/40 bg-cyan-300 px-4 py-2 text-sm font-bold text-slate-950"
           type="button"
         >
-          {isFormOpen ? <X size={16} /> : <Plus size={16} />} {isFormOpen ? 'Close' : 'Add Paper'}
+          {isFormOpen ? <X size={16} /> : <Plus size={16} />} {isFormOpen ? 'Close' : 'Add Publication'}
         </button>
       </div>
 
       {isFormOpen && (
-        <form onSubmit={handleSubmit} className="glass-card mb-8 grid gap-4 border-white/10 p-6 md:grid-cols-2">
-          <input
-            placeholder="Title"
-            className="col-span-2 rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.title}
-            onChange={(event) => setFormData({ ...formData, title: event.target.value })}
-            required
-          />
+        <form onSubmit={handleSubmit} className="glass-card mb-8 border-white/10 p-6 md:p-7">
+          <div className="mb-6 border-b border-white/10 pb-5">
+            <h3 className="text-lg font-semibold text-slate-100">
+              {editingId ? 'Edit Publication' : 'Add Publication'}
+            </h3>
+          </div>
 
-          <textarea
-            placeholder="Abstract"
-            className="col-span-2 h-32 rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.abstract}
-            onChange={(event) => setFormData({ ...formData, abstract: event.target.value })}
-            required
-          />
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="md:col-span-2 grid gap-2 text-sm">
+              <span className="text-slate-300">Title</span>
+              <input
+                className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                value={formData.title}
+                onChange={(event) => setFormData({ ...formData, title: event.target.value })}
+                required
+              />
+            </label>
 
-          <select
-            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.type}
-            onChange={(event) => setFormData({ ...formData, type: event.target.value })}
-          >
-            <option value="Journal">Journal</option>
-            <option value="Conference">Conference</option>
-          </select>
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Publication Type</span>
+              <select
+                className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                value={formData.type}
+                onChange={(event) => setFormData({ ...formData, type: event.target.value })}
+              >
+                <option value="Journal">Journal</option>
+                <option value="Conference">Conference</option>
+              </select>
+            </label>
 
-          <input
-            placeholder="Journal/Conference Name"
-            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.publicationName}
-            onChange={(event) => setFormData({ ...formData, publicationName: event.target.value })}
-            required
-          />
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Publication Name</span>
+              <input
+                className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                value={formData.publicationName}
+                onChange={(event) => setFormData({ ...formData, publicationName: event.target.value })}
+                required
+              />
+            </label>
 
-          <input
-            type="date"
-            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.publicationDate}
-            onChange={(event) => setFormData({ ...formData, publicationDate: event.target.value })}
-            required
-          />
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">Publication Date</span>
+              <div className="grid grid-cols-3 gap-3">
+                <select
+                  className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                  value={formData.publicationMonth}
+                  onChange={(event) =>
+                    setFormData((current) => {
+                      const nextMonth = event.target.value;
+                      const maxDays = getDaysInMonth(current.publicationYear, nextMonth);
+                      const nextDay =
+                        current.publicationDay && Number(current.publicationDay) > maxDays
+                          ? String(maxDays).padStart(2, '0')
+                          : current.publicationDay;
 
-          <input
-            placeholder="DOI / URL"
-            className="rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.doiLink}
-            onChange={(event) => setFormData({ ...formData, doiLink: event.target.value })}
-          />
+                      return {
+                        ...current,
+                        publicationMonth: nextMonth,
+                        publicationDay: nextDay,
+                      };
+                    })
+                  }
+                  required
+                >
+                  <option value="">Month</option>
+                  {MONTH_OPTIONS.map((month, index) => (
+                    <option key={month} value={String(index + 1).padStart(2, '0')}>
+                      {month}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                  value={formData.publicationDay}
+                  onChange={(event) => setFormData({ ...formData, publicationDay: event.target.value })}
+                  required
+                >
+                  <option value="">Day</option>
+                  {publicationDayOptions.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                  value={formData.publicationYear}
+                  onChange={(event) =>
+                    setFormData((current) => {
+                      const nextYear = event.target.value;
+                      const maxDays = getDaysInMonth(nextYear, current.publicationMonth);
+                      const nextDay =
+                        current.publicationDay && Number(current.publicationDay) > maxDays
+                          ? String(maxDays).padStart(2, '0')
+                          : current.publicationDay;
 
-          <input
-            placeholder="Authors (comma separated)"
-            className="col-span-2 rounded-lg border border-white/10 bg-slate-900/50 p-3 outline-none focus:border-cyan-300/60"
-            value={formData.authors}
-            onChange={(event) => setFormData({ ...formData, authors: event.target.value })}
-          />
+                      return {
+                        ...current,
+                        publicationYear: nextYear,
+                        publicationDay: nextDay,
+                      };
+                    })
+                  }
+                  required
+                >
+                  <option value="">Year</option>
+                  {YEAR_OPTIONS.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </label>
 
-          <button className="col-span-2 rounded-lg border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-950">
+            <label className="grid gap-2 text-sm">
+              <span className="text-slate-300">DOI / URL</span>
+              <input
+                className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                value={formData.doiLink}
+                onChange={(event) => setFormData({ ...formData, doiLink: event.target.value })}
+              />
+            </label>
+
+            <label className="md:col-span-2 grid gap-2 text-sm">
+              <span className="text-slate-300">Authors</span>
+              <input
+                className="rounded-xl border border-white/10 bg-slate-900/50 px-4 py-3 outline-none transition focus:border-cyan-300/60"
+                value={formData.authors}
+                onChange={(event) => setFormData({ ...formData, authors: event.target.value })}
+              />
+            </label>
+          </div>
+
+          <button className="mt-6 w-full rounded-xl border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wide text-slate-950">
             {editingId ? 'Update Publication' : 'Save Publication'}
           </button>
         </form>
@@ -187,7 +358,7 @@ const ResearchManager = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-white/5 text-xs uppercase text-slate-400">
-                <th className="p-4">Paper</th>
+                <th className="p-4">Publication</th>
                 <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -213,9 +384,15 @@ const ResearchManager = () => {
                               </div>
                               <div>
                                 <p className="font-medium text-slate-100">{paper.title}</p>
-                                <p className="text-xs text-cyan-200">
-                                  {paper.publicationName} ({paper.type})
-                                </p>
+                                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-cyan-200">
+                                  <span>{paper.publicationName}</span>
+                                  <span>({paper.type})</span>
+                                </div>
+                                {paper.publicationDate && (
+                                  <p className="mt-1 inline-flex items-center gap-1 text-xs text-slate-400">
+                                    <CalendarDays size={12} /> {formatPublicationDate(paper.publicationDate)}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </td>

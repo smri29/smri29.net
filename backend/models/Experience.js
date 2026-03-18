@@ -1,30 +1,49 @@
 const mongoose = require('mongoose');
 
 const experienceSchema = new mongoose.Schema({
-  role: {
-    type: String,
-    required: [true, 'Job role is required'], // e.g., "Frontend Intern"
-    trim: true
-  },
-  company: {
+  companyName: {
     type: String,
     required: [true, 'Company name is required'],
     trim: true
   },
-  duration: {
+  jobTitle: {
     type: String,
-    required: true, // e.g., "Jan 2025 - Present" or "Summer 2024"
+    required: [true, 'Job title is required'],
     trim: true
   },
+  currentlyWorking: {
+    type: Boolean,
+    default: false
+  },
+  startDate: {
+    type: Date,
+    required: true
+  },
+  endDate: {
+    type: Date,
+    default: null
+  },
   location: {
-    type: String, // e.g., "Remote" or "Dhaka, Bangladesh"
+    type: String,
     trim: true
   },
   description: {
-    type: String, // Full text description of responsibilities
-    required: true
+    type: String,
+    default: ''
   },
-  // --- ORDER FIELD FOR DRAG & DROP ---
+  // Legacy fields kept so older records remain readable while the new UI rolls out.
+  company: {
+    type: String,
+    trim: true
+  },
+  role: {
+    type: String,
+    trim: true
+  },
+  duration: {
+    type: String,
+    trim: true
+  },
   order: {
     type: Number,
     default: 0

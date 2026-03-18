@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        'dark-bg': '#070b12',
+        'dark-bg': '#0c1523',
         'neon-pink': '#22d3ee',
         'brand-amber': '#f59e0b',
         'panel-dark': '#0e1726',
