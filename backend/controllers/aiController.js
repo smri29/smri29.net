@@ -9,6 +9,7 @@ const Research = require('../models/Research');
 const Certificate = require('../models/Certificate');
 const Skill = require('../models/Skill');
 const Hobby = require('../models/Hobby');
+const { recordAnalyticsEvent } = require('./analyticsController');
 
 const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const MAX_PROMPT_LENGTH = 1200;
@@ -362,6 +363,25 @@ const chatWithAI = async (req, res) => {
   if (!genAI) {
     return res.status(503).json({ reply: 'AI assistant is currently unavailable.' });
   }
+
+  await recordAnalyticsEvent(req, {
+    eventType: 'engagement',
+    eventName: 'chat_prompt_submit',
+    sessionId: normalizeString(req.body?.sessionId, 120) || `chat-${Date.now()}`,
+    visitorId: normalizeString(req.body?.visitorId, 120),
+    pagePath: normalizeString(req.body?.pagePath, 300) || '/',
+    pageTitle: normalizeString(req.body?.pageTitle, 300) || 'Portfolio Chat',
+    pageUrl: normalizeString(req.body?.pageUrl, 2048),
+    referrer: normalizeString(req.body?.referrer, 2048),
+    timezone: normalizeString(req.body?.timezone, 120),
+    language: normalizeString(req.body?.language, 120),
+    screenWidth: Number(req.body?.screenWidth),
+    screenHeight: Number(req.body?.screenHeight),
+    metadata: {
+      promptLength: prompt.length,
+      historyItems: history.length,
+    },
+  });
 
   const { settings, knowledgeBase } = await fetchKnowledgeContext();
 

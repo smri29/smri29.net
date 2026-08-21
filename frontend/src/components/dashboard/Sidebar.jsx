@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Award,
+  BarChart3,
   Bot,
   BookOpen,
   BookOpenText,
@@ -22,6 +23,7 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
 
   const menuItems = [
+    { id: 'analytics', label: 'Analytics', icon: <BarChart3 size={18} /> },
     { id: 'hero', label: 'Hero', icon: <Sparkles size={18} /> },
     { id: 'introduction', label: 'Introduction', icon: <BookOpenText size={18} /> },
     { id: 'ai', label: 'AI Knowledge', icon: <Bot size={18} /> },

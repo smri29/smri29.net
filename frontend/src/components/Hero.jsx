@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-scroll';
 import { ArrowDown, Brain, Github, Linkedin, Volume2 } from 'lucide-react';
 import API from '../api/axios';
+import { trackAnalyticsEvent } from '../analytics/tracker';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -45,7 +46,7 @@ const Hero = () => {
       return;
     }
 
-    audio.volume = 0.02;
+    audio.volume = 0.04;
   }, []);
 
   useEffect(() => {
@@ -161,6 +162,7 @@ const Hero = () => {
               to="projects"
               smooth
               offset={-72}
+              onClick={() => trackAnalyticsEvent('click', 'hero_cta_projects_click', { section: 'projects' })}
               className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300 px-6 py-3 text-xs font-bold uppercase tracking-[0.14em] text-slate-950 shadow-[0_14px_36px_rgba(34,211,238,0.18)] transition hover:scale-[1.02]"
             >
               Explore Projects
@@ -172,6 +174,7 @@ const Hero = () => {
                 href="https://github.com/smri29"
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackAnalyticsEvent('click', 'hero_social_click', { network: 'github' })}
                 className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
                 title="GitHub"
               >
@@ -181,6 +184,7 @@ const Hero = () => {
                 href="https://www.linkedin.com/in/smri29"
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackAnalyticsEvent('click', 'hero_social_click', { network: 'linkedin' })}
                 className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
                 title="LinkedIn"
               >
@@ -190,6 +194,7 @@ const Hero = () => {
                 href="https://www.kaggle.com/shahmohammadrizvi"
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackAnalyticsEvent('click', 'hero_social_click', { network: 'kaggle' })}
                 className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
                 title="Kaggle"
               >
@@ -233,6 +238,7 @@ const Hero = () => {
                 preload="metadata"
                 controlsList="nodownload"
                 playsInline
+                onPlay={() => trackAnalyticsEvent('engagement', 'hero_audio_play', { track: 'Sura Ar Rahman' })}
                 className="w-full"
               >
                 <source src="/Audio/sura/Sura%20Ar%20Rahman.m4a" type="audio/mp4" />

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
 import API from '../api/axios';
+import { trackAnalyticsEvent } from '../analytics/tracker';
 import About from '../components/About';
 import ChatWidget from '../components/ChatWidget';
 import Contact from '../components/Contact';
@@ -393,6 +394,10 @@ const Home = () => {
                                         href={item.liveLink}
                                         target="_blank"
                                         rel="noreferrer"
+                                        onClick={() => trackAnalyticsEvent('click', 'project_live_click', {
+                                          projectName: item.projectName,
+                                          category: item.category || activeProjectCategory,
+                                        })}
                                         className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
                                         aria-label={`Open ${item.projectName} live project`}
                                       >
@@ -404,6 +409,10 @@ const Home = () => {
                                         href={item.githubLink}
                                         target="_blank"
                                         rel="noreferrer"
+                                        onClick={() => trackAnalyticsEvent('click', 'project_github_click', {
+                                          projectName: item.projectName,
+                                          category: item.category || activeProjectCategory,
+                                        })}
                                         className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
                                         aria-label={`Open ${item.projectName} source code`}
                                       >
@@ -594,6 +603,10 @@ const Home = () => {
                                   href={item.doiLink}
                                   target="_blank"
                                   rel="noreferrer"
+                                  onClick={() => trackAnalyticsEvent('click', 'research_publication_click', {
+                                    title: item.title,
+                                    type: label,
+                                  })}
                                   className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/15"
                                 >
                                   Read Publication <ExternalLink size={13} />
@@ -648,6 +661,7 @@ const Home = () => {
                     <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">{category}</h3>
                     <RouterLink
                       to={`/certifications#${getCategoryAnchor(category)}`}
+                      onClick={() => trackAnalyticsEvent('click', 'certifications_view_all_click', { category })}
                       className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-800/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-200"
                     >
                       View All

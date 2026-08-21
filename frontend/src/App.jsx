@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AnalyticsTracker from './components/AnalyticsTracker';
 
 const Home = lazy(() => import('./pages/Home'));
 const Certificates = lazy(() => import('./pages/Certificates'));
@@ -32,6 +33,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen selection:bg-cyan-300 selection:text-slate-950">
+        <AnalyticsTracker />
         <Suspense fallback={<RouteLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />

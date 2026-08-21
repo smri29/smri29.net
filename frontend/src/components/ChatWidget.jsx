@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import API from '../api/axios';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, Loader2, MessageSquare, Send, Sparkles, X } from 'lucide-react';
+import { getSessionId, getVisitorId, trackAnalyticsEvent } from '../analytics/tracker';
 
 const MotionButton = motion.button;
 const MotionDiv = motion.div;
@@ -65,7 +66,20 @@ const ChatWidget = () => {
     setLoading(true);
 
     try {
-      const { data } = await API.post('/data/chat', { prompt, history });
+      const { data } = await API.post('/data/chat', {
+        prompt,
+        history,
+        sessionId: getSessionId(),
+        visitorId: getVisitorId(),
+        pagePath: `${window.location.pathname}${window.location.hash || ''}`,
+        pageTitle: document.title,
+        pageUrl: window.location.href,
+        referrer: document.referrer || '',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        language: navigator.language || '',
+        screenWidth: window.screen?.width || null,
+        screenHeight: window.screen?.height || null,
+      });
       setMessages((prev) => [
         ...prev,
         { role: 'ai', text: cleanAssistantText(data.reply) || 'No response available yet.' },
@@ -85,6 +99,7 @@ const ChatWidget = () => {
 
   const handleQuickPrompt = async (prompt) => {
     setIsOpen(true);
+    trackAnalyticsEvent('engagement', 'chat_quick_prompt_click', { prompt });
     await sendPrompt(prompt);
   };
 
@@ -199,6 +214,11 @@ const ChatWidget = () => {
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.97 }}
         onClick={() => setIsOpen((prev) => !prev)}
+        onMouseDown={() => {
+          if (!isOpen) {
+            trackAnalyticsEvent('engagement', 'chat_widget_open', { placement: 'floating_button' });
+          }
+        }}
         className="inline-flex items-center gap-2 rounded-full border border-emerald-300/45 bg-emerald-300 px-4 py-3 text-sm font-bold text-slate-950 shadow-[0_8px_24px_rgba(74,222,128,0.25)]"
       >
         <MessageSquare size={18} />

@@ -10,6 +10,7 @@ const Education = require('../models/Education');
 const Hobby = require('../models/Hobby');
 const nodemailer = require('nodemailer');
 const { cloudinary, hasCloudinaryConfig } = require('../config/cloudinary');
+const { recordAnalyticsEvent } = require('./analyticsController');
 
 const PROJECT_CATEGORIES = new Set(['AI/ML', 'MERN', 'Flutter', 'Others']);
 const RESEARCH_TYPES = new Set(['Journal', 'Conference']);
@@ -835,6 +836,25 @@ exports.sendMessage = async (req, res) => {
   }
 
   const newMessage = await Message.create({ name, email, message });
+  await recordAnalyticsEvent(req, {
+    eventType: 'lead',
+    eventName: 'contact_form_submit',
+    sessionId: normalizeString(req.body.sessionId, 120) || `contact-${newMessage._id}`,
+    visitorId: normalizeString(req.body.visitorId, 120),
+    pagePath: normalizeString(req.body.pagePath, 300) || '/#contact',
+    pageTitle: 'Contact Form',
+    pageUrl: normalizeString(req.body.pageUrl, 2048),
+    referrer: normalizeString(req.body.referrer, 2048),
+    timezone: normalizeString(req.body.timezone, 120),
+    language: normalizeString(req.body.language, 120),
+    screenWidth: Number(req.body.screenWidth),
+    screenHeight: Number(req.body.screenHeight),
+    contactEmail: email,
+    metadata: {
+      name,
+      messageLength: message.length,
+    },
+  });
 
   let emailStatus = 'skipped';
   if (transporter && process.env.EMAIL_RECEIVER) {

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Award, ExternalLink } from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import API from '../api/axios';
+import { trackAnalyticsEvent } from '../analytics/tracker';
 
 const MotionSection = motion.section;
 const MotionArticle = motion.article;
@@ -190,6 +191,10 @@ const Certificates = () => {
                               href={item.verificationLink}
                               target="_blank"
                               rel="noreferrer"
+                              onClick={() => trackAnalyticsEvent('click', 'certificate_verify_click', {
+                                certificate: item.name,
+                                category,
+                              })}
                               className="rounded-full border border-white/10 p-2 text-slate-400 transition hover:border-cyan-300/35 hover:text-cyan-200"
                               aria-label="Verify certificate"
                             >

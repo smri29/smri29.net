@@ -47,6 +47,7 @@ app.use(cookieParser());
 // Main Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/data', require('./routes/dataRoutes'));
+app.use('/api/analytics', require('./routes/analyticsRoutes'));
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ ok: true, uptime: process.uptime() });

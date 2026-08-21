@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import AnalyticsManager from '../components/dashboard/AnalyticsManager';
 import AIKnowledgeManager from '../components/dashboard/AIKnowledgeManager';
 import CertificateManager from '../components/dashboard/CertificateManager';
 import EducationManager from '../components/dashboard/EducationManager';
@@ -13,12 +14,13 @@ import Sidebar from '../components/dashboard/Sidebar';
 import SkillManager from '../components/dashboard/SkillManager';
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('research');
+  const [activeTab, setActiveTab] = useState('analytics');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const tabs = ['hero', 'introduction', 'ai', 'research', 'projects', 'experience', 'education', 'certificates', 'skills', 'hobbies', 'messages'];
+  const tabs = ['analytics', 'hero', 'introduction', 'ai', 'research', 'projects', 'experience', 'education', 'certificates', 'skills', 'hobbies', 'messages'];
 
   const managerByTab = useMemo(
     () => ({
+      analytics: <AnalyticsManager />,
       hero: <HeroManager />,
       introduction: <IntroductionManager />,
       ai: <AIKnowledgeManager />,

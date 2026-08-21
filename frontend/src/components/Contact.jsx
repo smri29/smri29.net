@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import API from '../api/axios';
 import { toast } from 'react-toastify';
 import { Github, Linkedin, Mail, Send } from 'lucide-react';
+import { getSessionId, getVisitorId, trackAnalyticsEvent } from '../analytics/tracker';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -16,7 +17,19 @@ const Contact = () => {
     setSending(true);
 
     try {
-      await API.post('/data/contact', form);
+      await API.post('/data/contact', {
+        ...form,
+        sessionId: getSessionId(),
+        visitorId: getVisitorId(),
+        pagePath: `${window.location.pathname}${window.location.hash || ''}`,
+        pageUrl: window.location.href,
+        referrer: document.referrer || '',
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+        language: navigator.language || '',
+        screenWidth: window.screen?.width || null,
+        screenHeight: window.screen?.height || null,
+      });
+      trackAnalyticsEvent('lead', 'contact_form_success_toast', { emailDomain: form.email.split('@')[1] || '' });
       toast.success('Thanks for reaching out. I will respond shortly.');
       setForm({ name: '', email: '', message: '' });
     } catch (error) {
@@ -52,6 +65,7 @@ const Contact = () => {
           <div className="mt-8 space-y-4 text-sm text-slate-300">
             <a
               href="mailto:smri29.ml@gmail.com"
+              onClick={() => trackAnalyticsEvent('click', 'contact_email_click', { target: 'mailto' })}
               className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-slate-900/35 px-4 py-3 transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-cyan-200"
             >
               <Mail size={16} className="text-cyan-300" />
@@ -63,6 +77,7 @@ const Contact = () => {
                 href="https://www.linkedin.com/in/smri29"
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackAnalyticsEvent('click', 'contact_social_click', { network: 'linkedin' })}
                 className="rounded-2xl border border-white/10 bg-slate-900/35 p-3 transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-cyan-200"
                 aria-label="LinkedIn"
               >
@@ -72,6 +87,7 @@ const Contact = () => {
                 href="https://github.com/smri29"
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => trackAnalyticsEvent('click', 'contact_social_click', { network: 'github' })}
                 className="rounded-2xl border border-white/10 bg-slate-900/35 p-3 transition hover:-translate-y-0.5 hover:border-cyan-300/40 hover:text-cyan-200"
                 aria-label="GitHub"
               >
@@ -130,6 +146,7 @@ const Contact = () => {
               <button
                 type="submit"
                 disabled={sending}
+                onClick={() => trackAnalyticsEvent('engagement', 'contact_form_submit_attempt', { section: 'contact' })}
                 className="mt-2 inline-flex items-center justify-center gap-2 rounded-2xl border border-cyan-300/40 bg-cyan-300 px-4 py-3 text-sm font-bold uppercase tracking-wide text-slate-950 shadow-[0_16px_36px_rgba(34,211,238,0.14)] transition hover:-translate-y-0.5 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <Send size={15} />

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-scroll';
 import { Download, Menu, X } from 'lucide-react';
+import { trackAnalyticsEvent } from '../analytics/tracker';
 
 const MotionDiv = motion.div;
 
@@ -71,6 +72,7 @@ const Navbar = () => {
           <a
             href="/cv.pdf"
             download="Shah_Mohammad_Rizvi_CV.pdf"
+            onClick={() => trackAnalyticsEvent('click', 'resume_download_click', { label: 'Resume Download' })}
             className="hidden items-center gap-2 rounded-full border border-cyan-300/40 bg-cyan-300/10 px-4 py-2 text-xs font-bold uppercase tracking-wide text-cyan-200 transition hover:-translate-y-0.5 hover:border-cyan-300 hover:bg-cyan-300 hover:text-slate-950 md:inline-flex"
           >
             <Download size={14} />
@@ -104,7 +106,10 @@ const Navbar = () => {
                   to={link.to}
                   smooth
                   offset={-74}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    trackAnalyticsEvent('click', 'mobile_nav_section_click', { section: link.to });
+                    setIsOpen(false);
+                  }}
                   className="cursor-pointer rounded-lg border border-transparent px-3 py-2 text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-200"
                 >
                   {link.name}
