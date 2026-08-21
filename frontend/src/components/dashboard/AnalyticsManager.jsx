@@ -96,15 +96,15 @@ const AnalyticsManager = () => {
       ) : (
         <div className="space-y-8">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {OVERVIEW_CARDS.map(({ key, label, icon: Icon }) => (
-              <article key={key} className="glass-card border-white/10 p-5">
+            {OVERVIEW_CARDS.map((card) => (
+              <article key={card.key} className="glass-card border-white/10 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{label}</p>
-                    <p className="mt-3 text-3xl font-semibold text-slate-100">{overview[key] ?? 0}</p>
+                    <p className="text-xs uppercase tracking-[0.18em] text-slate-500">{card.label}</p>
+                    <p className="mt-3 text-3xl font-semibold text-slate-100">{overview[card.key] ?? 0}</p>
                   </div>
                   <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-3 text-cyan-200">
-                    <Icon size={18} />
+                    <card.icon size={18} />
                   </div>
                 </div>
               </article>
