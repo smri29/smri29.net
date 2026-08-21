@@ -25,12 +25,18 @@ const Hero = () => {
       try {
         const { data } = await API.get('/data/hero');
         setContent({
-          availabilityText: data?.availabilityText || FALLBACK_HERO.availabilityText,
+          availabilityText:
+            data && Object.prototype.hasOwnProperty.call(data, 'availabilityText')
+              ? data.availabilityText ?? ''
+              : FALLBACK_HERO.availabilityText,
           roleTitles:
             Array.isArray(data?.roleTitles) && data.roleTitles.length > 0
               ? data.roleTitles
               : FALLBACK_HERO.roleTitles,
-          summary: data?.summary || FALLBACK_HERO.summary,
+          summary:
+            data && Object.prototype.hasOwnProperty.call(data, 'summary')
+              ? data.summary ?? ''
+              : FALLBACK_HERO.summary,
         });
       } catch (error) {
         console.error('Failed to load hero content', error);
@@ -46,41 +52,7 @@ const Hero = () => {
       return;
     }
 
-    audio.volume = 0.04;
-  }, []);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) {
-      return;
-    }
-
-    let hasPlayed = false;
-
-    const playOnFirstInteraction = async () => {
-      if (hasPlayed) {
-        return;
-      }
-
-      hasPlayed = true;
-
-      try {
-        await audio.play();
-      } catch (error) {
-        console.warn('Hero audio could not start after user interaction.', error);
-      } finally {
-        window.removeEventListener('pointerdown', playOnFirstInteraction);
-        window.removeEventListener('keydown', playOnFirstInteraction);
-      }
-    };
-
-    window.addEventListener('pointerdown', playOnFirstInteraction, { once: true });
-    window.addEventListener('keydown', playOnFirstInteraction, { once: true });
-
-    return () => {
-      window.removeEventListener('pointerdown', playOnFirstInteraction);
-      window.removeEventListener('keydown', playOnFirstInteraction);
-    };
+    audio.volume = 0.05;
   }, []);
 
   return (
@@ -101,15 +73,17 @@ const Hero = () => {
         className="relative z-10 mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center"
       >
         <div>
-          <MotionDiv
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, delay: 0.08 }}
-            className="section-kicker mb-5"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse" />
-            {content.availabilityText}
-          </MotionDiv>
+          {content.availabilityText && (
+            <MotionDiv
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.08 }}
+              className="section-kicker mb-5"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse" />
+              {content.availabilityText}
+            </MotionDiv>
+          )}
 
           <MotionDiv
             initial={{ opacity: 0, y: 18 }}

@@ -17,9 +17,15 @@ const HeroManager = () => {
     try {
       const { data } = await API.get('/data/hero');
       setFormData({
-        availabilityText: data?.availabilityText || '',
+        availabilityText:
+          data && Object.prototype.hasOwnProperty.call(data, 'availabilityText')
+            ? data.availabilityText ?? ''
+            : '',
         roleTitles: Array.isArray(data?.roleTitles) ? data.roleTitles.join(', ') : '',
-        summary: data?.summary || '',
+        summary:
+          data && Object.prototype.hasOwnProperty.call(data, 'summary')
+            ? data.summary ?? ''
+            : '',
       });
     } catch (error) {
       toast.error('Failed to load hero content');

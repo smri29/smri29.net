@@ -211,12 +211,20 @@ const DEFAULT_HERO_CONTENT = {
 };
 
 const serializeHeroContent = (item) => ({
-  availabilityText: item?.availabilityText || DEFAULT_HERO_CONTENT.availabilityText,
+  availabilityText:
+    item && Object.prototype.hasOwnProperty.call(item, 'availabilityText')
+      ? item.availabilityText ?? ''
+      : DEFAULT_HERO_CONTENT.availabilityText,
   roleTitles:
     Array.isArray(item?.roleTitles) && item.roleTitles.length > 0
       ? item.roleTitles.filter(Boolean)
-      : DEFAULT_HERO_CONTENT.roleTitles,
-  summary: item?.summary || DEFAULT_HERO_CONTENT.summary,
+      : item
+        ? []
+        : DEFAULT_HERO_CONTENT.roleTitles,
+  summary:
+    item && Object.prototype.hasOwnProperty.call(item, 'summary')
+      ? item.summary ?? ''
+      : DEFAULT_HERO_CONTENT.summary,
   updatedAt: item?.updatedAt,
 });
 
