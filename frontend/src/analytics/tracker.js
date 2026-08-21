@@ -1,6 +1,7 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const VISITOR_ID_KEY = 'portfolio_visitor_id';
 const SESSION_ID_KEY = 'portfolio_session_id';
+const EXCLUDED_PATH_PREFIXES = ['/dashboard', '/admin', '/login'];
 
 let lastPageViewFingerprint = '';
 
@@ -54,12 +55,21 @@ const postAnalytics = async (payload) => {
   }
 };
 
+const isAnalyticsExcludedPath = (path) =>
+  EXCLUDED_PATH_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+
 export const trackAnalyticsEvent = (eventType, eventName, metadata = {}, overrides = {}) => {
+  const pagePath = overrides.pagePath || `${window.location.pathname}${window.location.hash || ''}`;
+  if (isAnalyticsExcludedPath(pagePath)) {
+    return;
+  }
+
   const payload = {
     ...buildBasePayload(),
     eventType,
     eventName,
     metadata,
+    pagePath,
     ...overrides,
   };
 
@@ -68,6 +78,10 @@ export const trackAnalyticsEvent = (eventType, eventName, metadata = {}, overrid
 
 export const trackPageView = (pathOverride = '') => {
   const path = pathOverride || `${window.location.pathname}${window.location.hash || ''}`;
+  if (isAnalyticsExcludedPath(path)) {
+    return;
+  }
+
   const fingerprint = `${path}|${document.title}`;
   if (lastPageViewFingerprint === fingerprint) {
     return;
