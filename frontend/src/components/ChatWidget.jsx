@@ -204,12 +204,6 @@ const ChatWidget = () => {
         )}
       </AnimatePresence>
 
-      {!isOpen && (
-        <div className="mb-2 max-w-[240px] rounded-xl border border-emerald-300/25 bg-slate-900/80 px-3 py-2 text-[11px] text-slate-300 shadow-lg backdrop-blur-sm transition duration-300 hover:-translate-y-0.5 hover:border-emerald-300/40">
-          Ask anything about Rizvi.
-        </div>
-      )}
-
       <MotionButton
         whileHover={{ scale: 1.04 }}
         whileTap={{ scale: 0.97 }}
