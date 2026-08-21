@@ -46,10 +46,7 @@ const Navbar = () => {
           aria-label="Scroll to top"
         >
           <img src="/smr.svg" alt="SMR mark" className="h-8 w-8 rounded-md border border-cyan-300/30 bg-slate-800/65 p-1" />
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.25em] text-cyan-300/80">Portfolio</p>
-            <p className="font-serif text-lg text-slate-100 group-hover:text-cyan-200">Shah Mohammad Rizvi</p>
-          </div>
+          <p className="font-serif text-lg text-slate-100 group-hover:text-cyan-200">Shah Mohammad Rizvi</p>
         </button>
 
         <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-slate-900/32 px-3 py-2 backdrop-blur-md xl:flex">
