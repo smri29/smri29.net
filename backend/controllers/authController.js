@@ -4,9 +4,43 @@ const User = require('../models/User');
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+const TURNSTILE_PASS_TTL_MS = 12 * 60 * 60 * 1000;
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '12h' });
+};
+
+const generateTurnstilePassToken = () => {
+  return jwt.sign({ type: 'turnstile_gate' }, process.env.JWT_SECRET, { expiresIn: '12h' });
+};
+
+const hasTurnstileConfig = () =>
+  Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY);
+
+const verifyTurnstileWithCloudflare = async ({ token, remoteip }) => {
+  const params = new URLSearchParams({
+    secret: String(process.env.TURNSTILE_SECRET_KEY || ''),
+    response: String(token || ''),
+  });
+
+  if (remoteip) {
+    params.set('remoteip', remoteip);
+  }
+
+  const response = await fetch(TURNSTILE_VERIFY_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString(),
+  });
+
+  if (!response.ok) {
+    throw new Error('Turnstile verification request failed');
+  }
+
+  return response.json();
 };
 
 const getEnvAdminConfig = () => {
@@ -135,4 +169,51 @@ const loginUser = async (req, res) => {
   return res.status(401).json({ message: 'Invalid admin credentials' });
 };
 
-module.exports = { registerUser, loginUser };
+const getTurnstileConfig = async (req, res) => {
+  res.json({
+    enabled: hasTurnstileConfig(),
+    siteKey: process.env.TURNSTILE_SITE_KEY || '',
+  });
+};
+
+const verifyTurnstileToken = async (req, res) => {
+  if (!hasTurnstileConfig()) {
+    return res.json({
+      success: true,
+      token: '',
+      expiresAt: null,
+      skipReason: 'turnstile_not_configured',
+    });
+  }
+
+  const token = String(req.body?.token || '').trim();
+  if (!token) {
+    return res.status(400).json({ message: 'Turnstile token is required' });
+  }
+
+  const remoteip =
+    req.headers['cf-connecting-ip'] ||
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    req.ip;
+
+  try {
+    const result = await verifyTurnstileWithCloudflare({ token, remoteip });
+    if (!result.success) {
+      return res.status(400).json({
+        message: 'Human verification failed',
+        errorCodes: Array.isArray(result['error-codes']) ? result['error-codes'] : [],
+      });
+    }
+
+    const expiresAt = new Date(Date.now() + TURNSTILE_PASS_TTL_MS).toISOString();
+    return res.json({
+      success: true,
+      token: generateTurnstilePassToken(),
+      expiresAt,
+    });
+  } catch (error) {
+    return res.status(502).json({ message: 'Unable to verify Turnstile at the moment' });
+  }
+};
+
+module.exports = { registerUser, loginUser, getTurnstileConfig, verifyTurnstileToken };

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-d
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnalyticsTracker from './components/AnalyticsTracker';
+import TurnstileGate from './components/TurnstileGate';
 
 const Home = lazy(() => import('./pages/Home'));
 const Certificates = lazy(() => import('./pages/Certificates'));
@@ -32,33 +33,35 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen selection:bg-cyan-300 selection:text-slate-950">
-        <AnalyticsTracker />
-        <Suspense fallback={<RouteLoader />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/certifications" element={<Certificates />} />
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
+      <TurnstileGate>
+        <div className="min-h-screen selection:bg-cyan-300 selection:text-slate-950">
+          <AnalyticsTracker />
+          <Suspense fallback={<RouteLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/certifications" element={<Certificates />} />
+              <Route path="/login" element={<Login />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
 
-        <ToastContainer
-          position="bottom-right"
-          autoClose={3000}
-          theme="dark"
-          pauseOnHover
-        />
-      </div>
+          <ToastContainer
+            position="bottom-right"
+            autoClose={3000}
+            theme="dark"
+            pauseOnHover
+          />
+        </div>
+      </TurnstileGate>
     </Router>
   );
 }
