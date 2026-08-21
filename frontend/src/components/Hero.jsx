@@ -5,6 +5,7 @@ import { Link } from 'react-scroll';
 import { ArrowDown, Brain, Github, Linkedin, Volume2 } from 'lucide-react';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
+import InteractiveNetworkBackground from './InteractiveNetworkBackground';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -63,6 +64,7 @@ const Hero = () => {
       transition={{ duration: 0.6 }}
       className="zone-olive relative flex min-h-screen items-center justify-center overflow-hidden px-5 pb-16 pt-24 md:px-8"
     >
+      <InteractiveNetworkBackground className="absolute inset-0 z-0" />
       <div className="pointer-events-none absolute inset-0 subtle-grid opacity-20" />
       <div className="pointer-events-none absolute left-[8%] top-[16%] h-32 w-32 rounded-full border border-cyan-300/10 bg-cyan-300/10 blur-2xl" />
       <div className="pointer-events-none absolute bottom-[12%] right-[10%] h-28 w-28 rounded-full border border-amber-200/10 bg-amber-200/10 blur-2xl" />
@@ -91,9 +93,8 @@ const Hero = () => {
             transition={{ duration: 0.55, delay: 0.15 }}
           >
             <h1 className="font-serif text-5xl leading-[0.95] tracking-tight text-slate-100 sm:text-6xl md:text-7xl">
-              Shah Mohammad
-              <span className="block bg-gradient-to-r from-cyan-200 via-cyan-300 to-amber-200 bg-clip-text text-transparent">
-                Rizvi
+              <span className="bg-gradient-to-r from-cyan-200 via-cyan-300 to-amber-200 bg-clip-text text-transparent">
+                Shah Mohammad Rizvi
               </span>
             </h1>
           </MotionDiv>

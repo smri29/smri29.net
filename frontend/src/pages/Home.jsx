@@ -22,6 +22,7 @@ import About from '../components/About';
 import ChatWidget from '../components/ChatWidget';
 import Contact from '../components/Contact';
 import Hero from '../components/Hero';
+import InteractiveNetworkBackground from '../components/InteractiveNetworkBackground';
 import Navbar from '../components/Navbar';
 import Skills from '../components/Skills';
 
@@ -239,7 +240,8 @@ const Home = () => {
           viewport={{ once: true, amount: 0.15 }}
           className="section-shell zone-olive border-t border-white/5 px-6 py-24 md:px-8"
         >
-          <div className="mx-auto max-w-6xl">
+          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl">
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <Briefcase className="text-cyan-300" size={28} />
               <h2 className="section-title">
@@ -300,7 +302,8 @@ const Home = () => {
           viewport={{ once: true, amount: 0.15 }}
           className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
         >
-          <div className="mx-auto max-w-6xl">
+          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl">
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <Code className="text-cyan-300" size={28} />
               <h2 className="section-title">
@@ -517,7 +520,8 @@ const Home = () => {
           viewport={{ once: true, amount: 0.15 }}
           className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
         >
-          <div className="mx-auto max-w-6xl">
+          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl">
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <BookOpen className="text-cyan-300" size={28} />
               <h2 className="section-title">
@@ -592,7 +596,8 @@ const Home = () => {
           viewport={{ once: true, amount: 0.15 }}
           className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
         >
-          <div className="mx-auto max-w-6xl">
+          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl">
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <Award className="text-cyan-300" size={28} />
               <h2 className="section-title">
@@ -674,7 +679,8 @@ const Home = () => {
           viewport={{ once: true, amount: 0.15 }}
           className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
         >
-          <div className="mx-auto max-w-6xl">
+          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl">
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <GraduationCap className="text-cyan-300" size={28} />
               <h2 className="section-title">
@@ -728,7 +734,8 @@ const Home = () => {
           viewport={{ once: true, amount: 0.15 }}
           className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
         >
-          <div className="mx-auto max-w-6xl">
+          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+          <div className="relative z-10 mx-auto max-w-6xl">
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <Heart className="text-cyan-300" size={28} />
               <h2 className="section-title">

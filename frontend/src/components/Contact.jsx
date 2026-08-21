@@ -4,6 +4,7 @@ import API from '../api/axios';
 import { toast } from 'react-toastify';
 import { Github, Linkedin, Mail, Send } from 'lucide-react';
 import { getSessionId, getVisitorId, trackAnalyticsEvent } from '../analytics/tracker';
+import InteractiveNetworkBackground from './InteractiveNetworkBackground';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -47,7 +48,8 @@ const Contact = () => {
       viewport={{ once: true, amount: 0.1 }}
       className="section-shell zone-blue px-6 py-24 md:px-8"
     >
-      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_1.2fr]">
+      <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_1.2fr]">
         <MotionDiv
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -4,6 +4,7 @@ import { ArrowLeft, Award, ExternalLink } from 'lucide-react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
+import InteractiveNetworkBackground from '../components/InteractiveNetworkBackground';
 
 const MotionSection = motion.section;
 const MotionArticle = motion.article;
@@ -99,6 +100,7 @@ const Certificates = () => {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-slate-100">
+      <InteractiveNetworkBackground />
       <div className="pointer-events-none fixed inset-0 subtle-grid opacity-[0.12]" />
       <div className="pointer-events-none fixed -left-20 top-0 h-96 w-96 rounded-full bg-cyan-300/12 blur-[110px]" />
       <div className="pointer-events-none fixed right-0 top-40 h-80 w-80 rounded-full bg-amber-200/10 blur-[105px]" />

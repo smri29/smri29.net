@@ -11,6 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import API from '../api/axios';
+import InteractiveNetworkBackground from './InteractiveNetworkBackground';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -77,7 +78,8 @@ const About = () => {
       viewport={{ once: true, amount: 0.1 }}
       className="section-shell zone-olive px-6 py-24 md:px-8"
     >
-      <div className="mx-auto max-w-6xl">
+      <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+      <div className="relative z-10 mx-auto max-w-6xl">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
           <MotionDiv
             initial={{ opacity: 0, x: -24 }}

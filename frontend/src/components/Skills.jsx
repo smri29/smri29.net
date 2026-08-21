@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import API from '../api/axios';
 import { ChevronDown, ChevronUp, Cpu } from 'lucide-react';
+import InteractiveNetworkBackground from './InteractiveNetworkBackground';
 
 const MotionSection = motion.section;
 const MotionArticle = motion.article;
@@ -101,7 +102,8 @@ const Skills = () => {
       viewport={{ once: true, amount: 0.1 }}
       className="section-shell zone-blue border-t border-white/5 px-6 py-24 backdrop-blur-sm md:px-8"
     >
-      <div className="mx-auto max-w-7xl">
+      <InteractiveNetworkBackground className="absolute inset-0 z-0" />
+      <div className="relative z-10 mx-auto max-w-7xl">
         <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="flex items-center gap-3">
