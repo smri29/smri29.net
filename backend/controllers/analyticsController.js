@@ -167,6 +167,15 @@ const trackAnalyticsEvent = async (req, res) => {
   return res.status(201).json({ success: true });
 };
 
+const resolveOrDefault = async (operation, fallbackValue, label) => {
+  try {
+    return await operation();
+  } catch (error) {
+    console.error(`Analytics summary segment failed: ${label}`, error);
+    return fallbackValue;
+  }
+};
+
 const getAnalyticsSummary = async (req, res) => {
   const days = Math.min(180, Math.max(7, Number(req.query.days) || 30));
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -189,88 +198,126 @@ const getAnalyticsSummary = async (req, res) => {
     recentEvents,
     contactEmails,
   ] = await Promise.all([
-    AnalyticsEvent.countDocuments(match),
-    AnalyticsEvent.countDocuments({ ...match, eventType: 'page_view' }),
-    AnalyticsEvent.distinct('visitorId', { ...match, visitorId: { $ne: '' } }),
-    AnalyticsEvent.distinct('sessionId', match),
-    AnalyticsEvent.countDocuments({ ...match, eventName: 'contact_form_submit' }),
-    AnalyticsEvent.countDocuments({ ...match, eventName: 'chat_prompt_submit' }),
-    AnalyticsEvent.aggregate([
-      { $match: { ...match, eventType: 'page_view', pagePath: { $ne: '' } } },
-      { $group: { _id: '$pagePath', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 8 },
-      { $project: { _id: 0, pagePath: '$_id', count: 1 } },
-    ]),
-    AnalyticsEvent.aggregate([
-      { $match: { ...match, eventType: 'click' } },
-      { $group: { _id: '$eventName', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 10 },
-      { $project: { _id: 0, eventName: '$_id', count: 1 } },
-    ]),
-    AnalyticsEvent.aggregate([
-      { $match: { ...match, referrerHost: { $ne: '' } } },
-      { $group: { _id: '$referrerHost', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 8 },
-      { $project: { _id: 0, host: '$_id', count: 1 } },
-    ]),
-    AnalyticsEvent.aggregate([
-      { $match: { ...match, country: { $ne: 'Unknown' } } },
-      { $group: { _id: '$country', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 8 },
-      { $project: { _id: 0, country: '$_id', count: 1 } },
-    ]),
-    AnalyticsEvent.aggregate([
-      { $match: match },
-      { $group: { _id: '$deviceType', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $project: { _id: 0, deviceType: '$_id', count: 1 } },
-    ]),
-    AnalyticsEvent.aggregate([
-      { $match: match },
-      { $group: { _id: '$browser', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 8 },
-      { $project: { _id: 0, browser: '$_id', count: 1 } },
-    ]),
-    AnalyticsEvent.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-          },
-          events: { $sum: 1 },
-          pageViews: {
-            $sum: {
-              $cond: [{ $eq: ['$eventType', 'page_view'] }, 1, 0],
+    resolveOrDefault(() => AnalyticsEvent.countDocuments(match), 0, 'totalEvents'),
+    resolveOrDefault(() => AnalyticsEvent.countDocuments({ ...match, eventType: 'page_view' }), 0, 'totalPageViews'),
+    resolveOrDefault(() => AnalyticsEvent.distinct('visitorId', { ...match, visitorId: { $ne: '' } }), [], 'uniqueVisitors'),
+    resolveOrDefault(() => AnalyticsEvent.distinct('sessionId', match), [], 'uniqueSessions'),
+    resolveOrDefault(() => AnalyticsEvent.countDocuments({ ...match, eventName: 'contact_form_submit' }), 0, 'contactSubmissions'),
+    resolveOrDefault(() => AnalyticsEvent.countDocuments({ ...match, eventName: 'chat_prompt_submit' }), 0, 'chatPrompts'),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: { ...match, eventType: 'page_view', pagePath: { $ne: '' } } },
+        { $group: { _id: '$pagePath', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, pagePath: '$_id', count: 1 } },
+      ]),
+      [],
+      'topPages'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: { ...match, eventType: 'click' } },
+        { $group: { _id: '$eventName', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+        { $project: { _id: 0, eventName: '$_id', count: 1 } },
+      ]),
+      [],
+      'topClicks'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: { ...match, referrerHost: { $ne: '' } } },
+        { $group: { _id: '$referrerHost', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, host: '$_id', count: 1 } },
+      ]),
+      [],
+      'topReferrers'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: { ...match, country: { $ne: 'Unknown' } } },
+        { $group: { _id: '$country', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, country: '$_id', count: 1 } },
+      ]),
+      [],
+      'geography'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: match },
+        { $group: { _id: '$deviceType', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $project: { _id: 0, deviceType: '$_id', count: 1 } },
+      ]),
+      [],
+      'devices'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: match },
+        { $group: { _id: '$browser', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, browser: '$_id', count: 1 } },
+      ]),
+      [],
+      'browsers'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: match },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$createdAt',
+                onNull: 'unknown',
+              },
+            },
+            events: { $sum: 1 },
+            pageViews: {
+              $sum: {
+                $cond: [{ $eq: ['$eventType', 'page_view'] }, 1, 0],
+              },
             },
           },
         },
-      },
-      { $sort: { _id: 1 } },
-      { $project: { _id: 0, date: '$_id', events: 1, pageViews: 1 } },
-    ]),
-    AnalyticsEvent.find(match)
-      .sort({ createdAt: -1 })
-      .limit(30)
-      .lean(),
-    AnalyticsEvent.aggregate([
-      { $match: { ...match, contactEmail: { $ne: '' } } },
-      {
-        $group: {
-          _id: '$contactEmail',
-          submissions: { $sum: 1 },
-          lastSeenAt: { $max: '$createdAt' },
+        { $match: { _id: { $ne: 'unknown' } } },
+        { $sort: { _id: 1 } },
+        { $project: { _id: 0, date: '$_id', events: 1, pageViews: 1 } },
+      ]),
+      [],
+      'dailyActivity'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.find(match).sort({ createdAt: -1 }).limit(30).lean(),
+      [],
+      'recentEvents'
+    ),
+    resolveOrDefault(
+      () => AnalyticsEvent.aggregate([
+        { $match: { ...match, contactEmail: { $ne: '' } } },
+        {
+          $group: {
+            _id: '$contactEmail',
+            submissions: { $sum: 1 },
+            lastSeenAt: { $max: '$createdAt' },
+          },
         },
-      },
-      { $sort: { submissions: -1, lastSeenAt: -1 } },
-      { $limit: 10 },
-      { $project: { _id: 0, email: '$_id', submissions: 1, lastSeenAt: 1 } },
-    ]),
+        { $sort: { submissions: -1, lastSeenAt: -1 } },
+        { $limit: 10 },
+        { $project: { _id: 0, email: '$_id', submissions: 1, lastSeenAt: 1 } },
+      ]),
+      [],
+      'contactEmails'
+    ),
   ]);
 
   res.json({
