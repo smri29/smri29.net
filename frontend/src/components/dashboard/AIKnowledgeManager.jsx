@@ -18,6 +18,7 @@ const emptyState = {
   facebookUrl: '',
   responseStyle: '',
   knowledgeBase: '',
+  publishKnowledgeBase: false,
   responseRules: '',
   additionalKnowledge: '',
   fallbackReply: '',
@@ -45,6 +46,7 @@ const AIKnowledgeManager = () => {
         facebookUrl: data?.facebookUrl || '',
         responseStyle: data?.responseStyle || '',
         knowledgeBase: data?.knowledgeBase || '',
+        publishKnowledgeBase: Boolean(data?.publishKnowledgeBase),
         responseRules: data?.responseRules || '',
         additionalKnowledge: data?.additionalKnowledge || '',
         fallbackReply: data?.fallbackReply || '',
@@ -209,6 +211,18 @@ const AIKnowledgeManager = () => {
               value={formData.knowledgeBase}
               onChange={(event) => setFormData({ ...formData, knowledgeBase: event.target.value })}
             />
+          </label>
+
+          <label className="md:col-span-2 flex items-start gap-3 rounded-xl border border-white/10 bg-slate-900/35 px-4 py-3 text-sm text-slate-300">
+            <input
+              type="checkbox"
+              checked={formData.publishKnowledgeBase}
+              onChange={(event) => setFormData({ ...formData, publishKnowledgeBase: event.target.checked })}
+              className="mt-1 h-4 w-4 rounded border-white/20 bg-slate-900/70"
+            />
+            <span>
+              Allow the chatbot to use the core knowledge base in public responses. Leave this off to prevent accidental prompt leakage of freeform admin notes.
+            </span>
           </label>
 
           <label className="md:col-span-2 grid gap-2 text-sm">

@@ -6,6 +6,15 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const TURNSTILE_PASS_TTL_MS = 12 * 60 * 60 * 1000;
+const AUTH_COOKIE_NAME = 'admin_session';
+
+const getAuthCookieOptions = () => ({
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: process.env.NODE_ENV === 'production',
+  maxAge: 12 * 60 * 60 * 1000,
+  path: '/',
+});
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '12h' });
@@ -17,6 +26,30 @@ const generateTurnstilePassToken = () => {
 
 const hasTurnstileConfig = () =>
   Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY);
+
+const getAllowedTurnstileHostnames = () => {
+  const configured = String(process.env.TURNSTILE_ALLOWED_HOSTNAMES || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+
+  const inferred = [
+    process.env.FRONTEND_URL,
+    'https://smri29.net',
+    'https://smri29net.vercel.app',
+    'http://localhost:5173',
+  ]
+    .map((value) => {
+      try {
+        return value ? new URL(value).hostname.toLowerCase() : '';
+      } catch {
+        return '';
+      }
+    })
+    .filter(Boolean);
+
+  return [...new Set([...configured, ...inferred])];
+};
 
 const verifyTurnstileWithCloudflare = async ({ token, remoteip }) => {
   const params = new URLSearchParams({
@@ -48,6 +81,17 @@ const getEnvAdminConfig = () => {
   const password = String(process.env.ADMIN_PASSWORD || '');
   const name = String(process.env.ADMIN_NAME || 'Portfolio Admin').trim();
   return { email, password, name };
+};
+
+const setAuthCookie = (res, token) => {
+  res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
+};
+
+const clearAuthCookie = (res) => {
+  res.clearCookie(AUTH_COOKIE_NAME, {
+    ...getAuthCookieOptions(),
+    maxAge: 0,
+  });
 };
 
 const getOrSyncEnvAdminUser = async () => {
@@ -98,10 +142,14 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` });
   }
 
-  const adminCount = await User.estimatedDocumentCount();
   const hasRegistrationKey = Boolean(process.env.ADMIN_REGISTRATION_KEY);
   const isValidKey = hasRegistrationKey && registrationKey === process.env.ADMIN_REGISTRATION_KEY;
-  if (adminCount > 0 && !isValidKey) {
+  if (!isValidKey) {
+    return res.status(403).json({ message: 'Admin registration is disabled' });
+  }
+
+  const adminCount = await User.estimatedDocumentCount();
+  if (adminCount > 0) {
     return res.status(403).json({ message: 'Admin registration is disabled' });
   }
 
@@ -119,11 +167,13 @@ const registerUser = async (req, res) => {
     password: hashedPassword,
   });
 
+  const token = generateToken(user.id);
+  setAuthCookie(res, token);
+
   return res.status(201).json({
     _id: user.id,
     name: user.name,
     email: user.email,
-    token: generateToken(user.id),
   });
 };
 
@@ -146,11 +196,12 @@ const loginUser = async (req, res) => {
   ) {
     const envUser = await getOrSyncEnvAdminUser();
     if (envUser) {
+      const token = generateToken(envUser.id);
+      setAuthCookie(res, token);
       return res.json({
         _id: envUser.id,
         name: envUser.name,
         email: envUser.email,
-        token: generateToken(envUser.id),
       });
     }
   }
@@ -158,11 +209,12 @@ const loginUser = async (req, res) => {
   const user = await User.findOne({ email: normalizedEmail });
 
   if (user && (await bcrypt.compare(rawPassword, user.password))) {
+    const token = generateToken(user.id);
+    setAuthCookie(res, token);
     return res.json({
       _id: user.id,
       name: user.name,
       email: user.email,
-      token: generateToken(user.id),
     });
   }
 
@@ -205,6 +257,12 @@ const verifyTurnstileToken = async (req, res) => {
       });
     }
 
+    const allowedHostnames = getAllowedTurnstileHostnames();
+    const verifiedHostname = String(result.hostname || '').trim().toLowerCase();
+    if (allowedHostnames.length > 0 && verifiedHostname && !allowedHostnames.includes(verifiedHostname)) {
+      return res.status(400).json({ message: 'Turnstile hostname verification failed' });
+    }
+
     const expiresAt = new Date(Date.now() + TURNSTILE_PASS_TTL_MS).toISOString();
     return res.json({
       success: true,
@@ -216,4 +274,41 @@ const verifyTurnstileToken = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getTurnstileConfig, verifyTurnstileToken };
+const getCurrentUser = async (req, res) => {
+  const token = String(req.cookies?.[AUTH_COOKIE_NAME] || '').trim();
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select('-password').lean();
+    if (!user) {
+      clearAuthCookie(res);
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    return res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (error) {
+    clearAuthCookie(res);
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+};
+
+const logoutUser = async (req, res) => {
+  clearAuthCookie(res);
+  return res.json({ success: true });
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getTurnstileConfig,
+  verifyTurnstileToken,
+  getCurrentUser,
+  logoutUser,
+};

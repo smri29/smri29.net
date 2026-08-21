@@ -35,6 +35,7 @@ const DEFAULT_AI_SETTINGS = {
   responseStyle:
     'Professional, clear, concise, and recruiter-friendly. Keep answers short by default. Use direct facts. If information is missing, say so clearly.',
   knowledgeBase: '',
+  publishKnowledgeBase: false,
   responseRules:
     'Use the knowledge base as the source of truth. Do not invent roles, achievements, dates, links, metrics, or claims. If information is missing, say so clearly. Keep answers concise by default. Avoid markdown formatting such as headings, bold, italics, or code fences. For lists, use plain-text bullets starting with "-".',
   additionalKnowledge: '',
@@ -105,6 +106,7 @@ const serializeAISettings = (item) => ({
   facebookUrl: item?.facebookUrl || '',
   responseStyle: item?.responseStyle || DEFAULT_AI_SETTINGS.responseStyle,
   knowledgeBase: item?.knowledgeBase || item?.additionalKnowledge || '',
+  publishKnowledgeBase: Boolean(item?.publishKnowledgeBase),
   responseRules: item?.responseRules || DEFAULT_AI_SETTINGS.responseRules,
   additionalKnowledge: item?.additionalKnowledge || '',
   fallbackReply: item?.fallbackReply || DEFAULT_AI_SETTINGS.fallbackReply,
@@ -157,7 +159,9 @@ const buildKnowledgeBase = ({
       settings.kaggleUrl && `Kaggle: ${settings.kaggleUrl}`,
       settings.facebookUrl && `Facebook: ${settings.facebookUrl}`,
     ]),
-    settings.knowledgeBase ? `ADMIN-CURATED KNOWLEDGE BASE\n${settings.knowledgeBase}` : '',
+    settings.publishKnowledgeBase && settings.knowledgeBase
+      ? `PUBLIC KNOWLEDGE BASE\n${settings.knowledgeBase}`
+      : '',
     formatSection('HERO SECTION', [
       hero?.availabilityText && `Availability: ${hero.availabilityText}`,
       Array.isArray(hero?.roleTitles) && hero.roleTitles.length > 0
@@ -245,7 +249,6 @@ const buildKnowledgeBase = ({
       'INTERESTS AND HOBBIES',
       (hobbies || []).map((item) => [item.name, item.description].filter(Boolean).join(' | '))
     ),
-    settings.additionalKnowledge ? `SUPPLEMENTAL KNOWLEDGE\n${settings.additionalKnowledge}` : '',
     `RESPONSE STYLE\n${settings.responseStyle}`,
     `RESPONSE RULES\n${settings.responseRules}`,
   ];
@@ -317,6 +320,7 @@ const updateAISettings = async (req, res) => {
     facebookUrl: normalizeString(req.body.facebookUrl, 2048),
     responseStyle: normalizeString(req.body.responseStyle, 2000),
     knowledgeBase: normalizeString(req.body.knowledgeBase, 20000),
+    publishKnowledgeBase: req.body.publishKnowledgeBase === true || req.body.publishKnowledgeBase === 'true',
     responseRules:
       normalizeString(req.body.responseRules, 4000) || DEFAULT_AI_SETTINGS.responseRules,
     additionalKnowledge: normalizeString(req.body.additionalKnowledge, 12000),

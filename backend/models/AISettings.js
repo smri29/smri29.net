@@ -72,6 +72,10 @@ const aiSettingsSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    publishKnowledgeBase: {
+      type: Boolean,
+      default: false,
+    },
     responseRules: {
       type: String,
       trim: true,

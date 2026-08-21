@@ -10,9 +10,23 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem('token')) {
-      navigate('/dashboard', { replace: true });
-    }
+    let active = true;
+
+    const checkSession = async () => {
+      try {
+        await API.get('/auth/me');
+        if (active) {
+          navigate('/dashboard', { replace: true });
+        }
+      } catch (error) {
+        // Stay on the login page when no valid admin session exists.
+      }
+    };
+
+    checkSession();
+    return () => {
+      active = false;
+    };
   }, [navigate]);
 
   const handleLogin = async (event) => {
@@ -21,8 +35,6 @@ const Login = () => {
 
     try {
       const { data } = await API.post('/auth/login', { email, password });
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('adminName', data.name);
       toast.success(`Welcome back, ${data.name}`);
       navigate('/dashboard');
     } catch (error) {

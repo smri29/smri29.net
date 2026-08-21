@@ -2,6 +2,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 const VISITOR_ID_KEY = 'portfolio_visitor_id';
 const SESSION_ID_KEY = 'portfolio_session_id';
 const EXCLUDED_PATH_PREFIXES = ['/dashboard', '/admin', '/login'];
+const GATE_STORAGE_KEY = 'turnstile_gate_pass';
 
 let lastPageViewFingerprint = '';
 
@@ -25,6 +26,28 @@ const getStorageValue = (storage, key, prefix) => {
 
 export const getVisitorId = () => getStorageValue(window.localStorage, VISITOR_ID_KEY, 'visitor');
 export const getSessionId = () => getStorageValue(window.sessionStorage, SESSION_ID_KEY, 'session');
+export const getTurnstileGateToken = () => {
+  try {
+    const raw = window.localStorage.getItem(GATE_STORAGE_KEY);
+    if (!raw) {
+      return '';
+    }
+
+    const parsed = JSON.parse(raw);
+    if (!parsed?.expiresAt || !parsed?.token) {
+      return '';
+    }
+
+    if (new Date(parsed.expiresAt).getTime() <= Date.now()) {
+      window.localStorage.removeItem(GATE_STORAGE_KEY);
+      return '';
+    }
+
+    return String(parsed.token);
+  } catch {
+    return '';
+  }
+};
 
 const buildBasePayload = () => ({
   visitorId: getVisitorId(),
@@ -46,6 +69,7 @@ const postAnalytics = async (payload) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(getTurnstileGateToken() ? { 'x-turnstile-gate-token': getTurnstileGateToken() } : {}),
       },
       body: JSON.stringify(payload),
       keepalive: true,

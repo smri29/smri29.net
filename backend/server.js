@@ -4,6 +4,13 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const {
+  securityHeaders,
+  authRateLimiter,
+  analyticsRateLimiter,
+  rejectSuspiciousPayload,
+  requireTurnstileGate,
+} = require('./middleware/securityMiddleware');
 
 // Load Config
 dotenv.config();
@@ -19,6 +26,7 @@ connectDB();
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 
 const allowedOrigins = [
   'http://localhost:5173',
@@ -39,15 +47,17 @@ const corsOptions = {
   optionsSuccessStatus: 200,
 };
 
+app.use(securityHeaders);
 app.use(cors(corsOptions));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 app.use(cookieParser());
+app.use(rejectSuspiciousPayload);
 
 // Main Routes
-app.use('/api/auth', require('./routes/authRoutes'));
-app.use('/api/data', require('./routes/dataRoutes'));
-app.use('/api/analytics', require('./routes/analyticsRoutes'));
+app.use('/api/auth', authRateLimiter, require('./routes/authRoutes'));
+app.use('/api/data', requireTurnstileGate, require('./routes/dataRoutes'));
+app.use('/api/analytics', analyticsRateLimiter, requireTurnstileGate, require('./routes/analyticsRoutes'));
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ ok: true, uptime: process.uptime() });

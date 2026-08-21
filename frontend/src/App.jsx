@@ -1,9 +1,10 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnalyticsTracker from './components/AnalyticsTracker';
 import TurnstileGate from './components/TurnstileGate';
+import API from './api/axios';
 
 const Home = lazy(() => import('./pages/Home'));
 const Certificates = lazy(() => import('./pages/Certificates'));
@@ -23,10 +24,38 @@ const RouteLoader = () => (
 );
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  if (!token) {
+  const [status, setStatus] = useState('checking');
+
+  useEffect(() => {
+    let active = true;
+
+    const verifySession = async () => {
+      try {
+        await API.get('/auth/me');
+        if (active) {
+          setStatus('authorized');
+        }
+      } catch (error) {
+        if (active) {
+          setStatus('unauthorized');
+        }
+      }
+    };
+
+    verifySession();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (status === 'checking') {
+    return <RouteLoader />;
+  }
+
+  if (status !== 'authorized') {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
 
