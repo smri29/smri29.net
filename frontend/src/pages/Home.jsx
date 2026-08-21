@@ -551,12 +551,7 @@ const Home = () => {
                           <h3 className="text-lg font-semibold leading-snug text-slate-100">{item.title}</h3>
 
                           {authors.length > 0 && (
-                            <p className="mt-3 text-sm leading-relaxed text-slate-300">
-                              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                                Authors
-                              </span>{' '}
-                              {authors.join(', ')}
-                            </p>
+                            <p className="mt-3 text-sm leading-relaxed text-slate-300">{authors.join(', ')}</p>
                           )}
                         </div>
 
