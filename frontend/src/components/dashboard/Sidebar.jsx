@@ -18,7 +18,7 @@ import {
   Mail,
   Sparkles,
 } from 'lucide-react';
-import API from '../../api/axios';
+import API, { setAdminToken } from '../../api/axios';
 
 const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
   const navigate = useNavigate();
@@ -42,6 +42,7 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
     API.post('/auth/logout')
       .catch(() => {})
       .finally(() => {
+        setAdminToken('');
         localStorage.removeItem('turnstile_gate_pass');
         navigate('/login');
       });

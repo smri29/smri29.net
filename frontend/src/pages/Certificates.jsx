@@ -108,7 +108,7 @@ const Certificates = () => {
           <div>
             <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-200">Portfolio</p>
             <h1 className="font-serif text-3xl text-slate-100 md:text-4xl">
-              Professional <span className="text-cyan-200">Certificates</span>
+              <span className="text-cyan-200">Certificates</span>
             </h1>
           </div>
 

@@ -4,7 +4,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AnalyticsTracker from './components/AnalyticsTracker';
 import TurnstileGate from './components/TurnstileGate';
-import API from './api/axios';
+import API, { getAdminToken, setAdminToken } from './api/axios';
 
 const Home = lazy(() => import('./pages/Home'));
 const Certificates = lazy(() => import('./pages/Certificates'));
@@ -30,12 +30,20 @@ const ProtectedRoute = ({ children }) => {
     let active = true;
 
     const verifySession = async () => {
+      if (!getAdminToken()) {
+        if (active) {
+          setStatus('unauthorized');
+        }
+        return;
+      }
+
       try {
         await API.get('/auth/me');
         if (active) {
           setStatus('authorized');
         }
       } catch (error) {
+        setAdminToken('');
         if (active) {
           setStatus('unauthorized');
         }

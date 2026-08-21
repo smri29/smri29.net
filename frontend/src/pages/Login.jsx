@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import API from '../api/axios';
+import API, { getAdminToken, setAdminToken } from '../api/axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,13 +13,17 @@ const Login = () => {
     let active = true;
 
     const checkSession = async () => {
+      if (!getAdminToken()) {
+        return;
+      }
+
       try {
         await API.get('/auth/me');
         if (active) {
           navigate('/dashboard', { replace: true });
         }
       } catch (error) {
-        // Stay on the login page when no valid admin session exists.
+        setAdminToken('');
       }
     };
 
@@ -35,6 +39,7 @@ const Login = () => {
 
     try {
       const { data } = await API.post('/auth/login', { email, password });
+      setAdminToken(data?.token || '');
       toast.success(`Welcome back, ${data.name}`);
       navigate('/dashboard');
     } catch (error) {

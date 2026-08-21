@@ -7,6 +7,7 @@ const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 const {
   securityHeaders,
   authRateLimiter,
+  authSessionRateLimiter,
   analyticsRateLimiter,
   rejectSuspiciousPayload,
   requireTurnstileGate,
@@ -55,7 +56,11 @@ app.use(cookieParser());
 app.use(rejectSuspiciousPayload);
 
 // Main Routes
-app.use('/api/auth', authRateLimiter, require('./routes/authRoutes'));
+app.use('/api/auth/login', authRateLimiter);
+app.use('/api/auth/register', authRateLimiter);
+app.use('/api/auth/turnstile/verify', authRateLimiter);
+app.use('/api/auth/me', authSessionRateLimiter);
+app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/data', requireTurnstileGate, require('./routes/dataRoutes'));
 app.use('/api/analytics', analyticsRateLimiter, requireTurnstileGate, require('./routes/analyticsRoutes'));
 

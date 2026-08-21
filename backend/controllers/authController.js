@@ -6,15 +6,6 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const TURNSTILE_PASS_TTL_MS = 12 * 60 * 60 * 1000;
-const AUTH_COOKIE_NAME = 'admin_session';
-
-const getAuthCookieOptions = () => ({
-  httpOnly: true,
-  sameSite: 'lax',
-  secure: process.env.NODE_ENV === 'production',
-  maxAge: 12 * 60 * 60 * 1000,
-  path: '/',
-});
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '12h' });
@@ -81,17 +72,6 @@ const getEnvAdminConfig = () => {
   const password = String(process.env.ADMIN_PASSWORD || '');
   const name = String(process.env.ADMIN_NAME || 'Portfolio Admin').trim();
   return { email, password, name };
-};
-
-const setAuthCookie = (res, token) => {
-  res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
-};
-
-const clearAuthCookie = (res) => {
-  res.clearCookie(AUTH_COOKIE_NAME, {
-    ...getAuthCookieOptions(),
-    maxAge: 0,
-  });
 };
 
 const getOrSyncEnvAdminUser = async () => {
@@ -168,12 +148,12 @@ const registerUser = async (req, res) => {
   });
 
   const token = generateToken(user.id);
-  setAuthCookie(res, token);
 
   return res.status(201).json({
     _id: user.id,
     name: user.name,
     email: user.email,
+    token,
   });
 };
 
@@ -197,11 +177,11 @@ const loginUser = async (req, res) => {
     const envUser = await getOrSyncEnvAdminUser();
     if (envUser) {
       const token = generateToken(envUser.id);
-      setAuthCookie(res, token);
       return res.json({
         _id: envUser.id,
         name: envUser.name,
         email: envUser.email,
+        token,
       });
     }
   }
@@ -210,11 +190,11 @@ const loginUser = async (req, res) => {
 
   if (user && (await bcrypt.compare(rawPassword, user.password))) {
     const token = generateToken(user.id);
-    setAuthCookie(res, token);
     return res.json({
       _id: user.id,
       name: user.name,
       email: user.email,
+      token,
     });
   }
 
@@ -275,7 +255,9 @@ const verifyTurnstileToken = async (req, res) => {
 };
 
 const getCurrentUser = async (req, res) => {
-  const token = String(req.cookies?.[AUTH_COOKIE_NAME] || '').trim();
+  const token = String(req.headers.authorization || '')
+    .trim()
+    .replace(/^Bearer\s+/i, '');
   if (!token) {
     return res.status(401).json({ message: 'Not authorized' });
   }
@@ -284,7 +266,6 @@ const getCurrentUser = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password').lean();
     if (!user) {
-      clearAuthCookie(res);
       return res.status(401).json({ message: 'Not authorized' });
     }
 
@@ -294,13 +275,11 @@ const getCurrentUser = async (req, res) => {
       email: user.email,
     });
   } catch (error) {
-    clearAuthCookie(res);
     return res.status(401).json({ message: 'Not authorized' });
   }
 };
 
 const logoutUser = async (req, res) => {
-  clearAuthCookie(res);
   return res.json({ success: true });
 };
 

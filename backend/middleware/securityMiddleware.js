@@ -47,6 +47,12 @@ const authRateLimiter = buildLimiter({
   message: 'Too many authentication attempts. Please try again later.',
 });
 
+const authSessionRateLimiter = buildLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  message: 'Too many session validation requests. Please try again later.',
+});
+
 const publicWriteRateLimiter = buildLimiter({
   windowMs: 15 * 60 * 1000,
   max: 40,
@@ -153,6 +159,7 @@ const requireTurnstileGate = (req, res, next) => {
 module.exports = {
   securityHeaders,
   authRateLimiter,
+  authSessionRateLimiter,
   publicWriteRateLimiter,
   analyticsRateLimiter,
   adminRateLimiter,

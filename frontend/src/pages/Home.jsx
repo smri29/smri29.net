@@ -218,6 +218,8 @@ const Home = () => {
   }, [availableProjectCategories]);
 
   const activeProjects = activeProjectCategory ? projectsByCategory[activeProjectCategory] || [] : [];
+  const hobbiesSplitIndex = Math.ceil(hobbies.length / 2);
+  const hobbyColumns = [hobbies.slice(0, hobbiesSplitIndex), hobbies.slice(hobbiesSplitIndex)];
 
   return (
     <div className="relative min-h-screen overflow-x-hidden text-slate-100">
@@ -638,7 +640,7 @@ const Home = () => {
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <Award className="text-cyan-300" size={28} />
               <h2 className="section-title">
-                Professional <span className="text-cyan-200">Certifications</span>
+                <span className="text-cyan-200">Certifications</span>
               </h2>
             </MotionDiv>
 
@@ -667,32 +669,37 @@ const Home = () => {
                       View All
                     </RouterLink>
                   </div>
-                  <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                    {previewItems.map((item) => (
+                  <div>
+                    {previewItems.map((item, index) => (
                       <MotionArticle
                         key={item._id}
                         variants={CARD_ITEM}
-                        className="glass-card card-sheen border-white/10 p-5 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35"
+                        className={`px-1 py-5 transition duration-300 md:px-2 ${
+                          index !== previewItems.length - 1 ? 'border-b border-white/10' : ''
+                        }`}
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <h4 className="text-sm font-semibold text-slate-100">{item.name}</h4>
-                            <p className="mt-1 text-xs text-slate-400">{item.issuingOrganization}</p>
-                            <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-slate-500">
-                              {formatCertificateDate(item.issueDate)}
-                            </p>
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-base font-semibold text-slate-100">{item.name}</h4>
+                            <p className="mt-1 text-sm text-cyan-200">{item.issuingOrganization}</p>
                           </div>
-                          {item.verificationLink && (
-                            <a
-                              href={item.verificationLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-slate-400 transition hover:text-cyan-200"
-                              aria-label="Verify certificate"
-                            >
-                              <ExternalLink size={15} />
-                            </a>
-                          )}
+
+                          <div className="flex items-center gap-3 md:shrink-0">
+                            <span className="inline-flex rounded-full border border-white/10 bg-slate-800/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">
+                              {formatCertificateDate(item.issueDate)}
+                            </span>
+                            {item.verificationLink && (
+                              <a
+                                href={item.verificationLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-400 transition hover:border-cyan-300/35 hover:text-cyan-200"
+                                aria-label="Verify certificate"
+                              >
+                                <ExternalLink size={15} />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </MotionArticle>
                     ))}
@@ -722,28 +729,34 @@ const Home = () => {
             {education.length === 0 ? (
               <p className="text-sm text-slate-400">No education entries added yet.</p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {education.map((item) => (
+              <div>
+                {education.map((item, index) => (
                   <article
                     key={item._id}
-                    className="glass-card card-sheen border-white/10 p-5 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30"
+                    className={`px-1 py-5 transition duration-300 md:px-2 ${
+                      index !== education.length - 1 ? 'border-b border-white/10' : ''
+                    }`}
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                      <div className="min-w-0 flex-1">
                         <h3 className="text-lg font-semibold leading-snug text-slate-100">{item.degree}</h3>
-                        <p className="mt-2 text-sm text-cyan-200">{item.institution}</p>
+                        <p className="mt-1 text-sm text-cyan-200">{item.institution}</p>
+                        {item.grade && (
+                          <p className="mt-3 text-sm text-slate-300">
+                            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                              Grade
+                            </span>{' '}
+                            {item.grade}
+                          </p>
+                        )}
                       </div>
-                      <span className="rounded-full border border-white/10 bg-slate-800/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">
-                        {item.year}
-                      </span>
-                    </div>
 
-                    {item.grade && (
-                      <div className="mt-4 border-t border-white/10 pt-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Grade</p>
-                        <p className="mt-2 text-sm text-slate-300">{item.grade}</p>
+                      <div className="shrink-0 text-left md:text-right">
+                        <span className="inline-flex rounded-full border border-white/10 bg-slate-800/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">
+                          {item.year}
+                        </span>
                       </div>
-                    )}
+                    </div>
                   </article>
                 ))}
               </div>
@@ -763,7 +776,7 @@ const Home = () => {
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <Heart className="text-cyan-300" size={28} />
               <h2 className="section-title">
-                Interests and <span className="text-cyan-200">Hobbies</span>
+                <span className="text-cyan-200">Hobbies</span>
               </h2>
             </MotionDiv>
 
@@ -775,29 +788,35 @@ const Home = () => {
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.15 }}
-                className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
+                className="grid gap-x-10 md:grid-cols-2"
               >
-                {hobbies.map((hobby) => (
-                  <MotionArticle
-                    key={hobby._id}
-                    variants={CARD_ITEM}
-                    className="glass-card card-sheen group relative overflow-hidden rounded-[24px] border-white/10 bg-slate-900/60 p-5 shadow-[0_18px_50px_rgba(6,10,22,0.18)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:bg-slate-900/78"
-                  >
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-cyan-300/10 via-transparent to-amber-200/5 opacity-70 transition duration-300 group-hover:opacity-100" />
+                {hobbyColumns.map((column, columnIndex) => (
+                  <div key={`hobby-column-${columnIndex}`}>
+                    {column.map((hobby, index) => (
+                      <MotionArticle
+                        key={hobby._id}
+                        variants={CARD_ITEM}
+                        className={`group relative px-1 py-5 transition duration-300 md:px-2 ${
+                          index !== column.length - 1 ? 'border-b border-white/10' : ''
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex min-w-0 flex-1 items-start gap-4">
+                            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-xl text-cyan-200">
+                              {hobby.icon || <Smile size={22} />}
+                            </div>
 
-                    <div className="relative z-10 flex h-full flex-col">
-                      <div className="mb-4">
-                        <div className="grid h-12 w-12 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-xl text-cyan-200">
-                          {hobby.icon || <Smile size={22} />}
+                            <div className="min-w-0 flex-1">
+                              <h4 className="text-lg font-semibold leading-snug text-slate-100">{hobby.name}</h4>
+                              {hobby.description && (
+                                <p className="mt-2 text-sm leading-relaxed text-slate-300">{hobby.description}</p>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-
-                      <h4 className="text-lg font-semibold leading-snug text-slate-100">{hobby.name}</h4>
-                      {hobby.description && (
-                        <p className="mt-2 text-sm leading-relaxed text-slate-300">{hobby.description}</p>
-                      )}
-                    </div>
-                  </MotionArticle>
+                      </MotionArticle>
+                    ))}
+                  </div>
                 ))}
               </MotionDiv>
             )}
