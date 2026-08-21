@@ -170,15 +170,12 @@ const Home = () => {
     fetchData();
   }, []);
 
-  const researchByType = useMemo(() => {
-    return research.reduce(
-      (acc, item) => {
-        if (item.type === 'Journal') acc.journals.push(item);
-        if (item.type === 'Conference') acc.conferences.push(item);
-        return acc;
-      },
-      { journals: [], conferences: [] }
-    );
+  const sortedResearch = useMemo(() => {
+    return [...research].sort((a, b) => {
+      const aTime = a?.publicationDate ? new Date(a.publicationDate).getTime() : 0;
+      const bTime = b?.publicationDate ? new Date(b.publicationDate).getTime() : 0;
+      return bTime - aTime;
+    });
   }, [research]);
 
   const projectsByCategory = useMemo(() => {
@@ -524,105 +521,69 @@ const Home = () => {
             <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
               <BookOpen className="text-cyan-300" size={28} />
               <h2 className="section-title">
-                Research <span className="text-cyan-200">Publications</span>
+                <span className="text-cyan-200">Publicaiton</span>
               </h2>
             </MotionDiv>
 
-            {[
-              { label: 'Journal', items: researchByType.journals },
-              { label: 'Conference', items: researchByType.conferences },
-            ].map(({ label, items }) => {
-              if (!items.length) return null;
+            {sortedResearch.length === 0 ? (
+              <p className="text-sm text-slate-400">No publications added yet.</p>
+            ) : (
+              <MotionDiv
+                variants={CARD_STAGGER}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.15 }}
+              >
+                {sortedResearch.map((item, index) => {
+                  const publicationDate = formatPublicationDate(item.publicationDate);
+                  const authors = Array.isArray(item.authors) ? item.authors.filter(Boolean) : [];
 
-              return (
-                <MotionDiv
-                  key={label}
-                  variants={CARD_STAGGER}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.15 }}
-                  className="mb-10"
-                >
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <div>
-                      <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">{label}</h3>
-                      <p className="mt-2 text-sm text-slate-400">
-                        {items.length} publication{items.length === 1 ? '' : 's'}
-                      </p>
-                    </div>
-                    <span className="rounded-full border border-white/10 bg-slate-800/65 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-                      {label}
-                    </span>
-                  </div>
+                  return (
+                    <MotionArticle
+                      key={item._id}
+                      variants={CARD_ITEM}
+                      className={`px-1 py-5 transition duration-300 md:px-2 ${
+                        index !== sortedResearch.length - 1 ? 'border-b border-white/10' : ''
+                      }`}
+                    >
+                      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-lg font-semibold leading-snug text-slate-100">{item.title}</h3>
 
-                  <div className="grid gap-6 lg:grid-cols-2">
-                    {items.map((item) => {
-                      const hasAuthors = Array.isArray(item.authors) && item.authors.length > 0;
-                      const publicationDate = formatPublicationDate(item.publicationDate);
+                          {authors.length > 0 && (
+                            <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                Authors
+                              </span>{' '}
+                              {authors.join(', ')}
+                            </p>
+                          )}
+                        </div>
 
-                      return (
-                        <MotionArticle
-                          key={item._id}
-                          variants={CARD_ITEM}
-                          className="glass-card card-sheen group relative overflow-hidden rounded-[28px] border-white/10 bg-slate-900/60 p-6 shadow-[0_18px_55px_rgba(6,10,22,0.22)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:bg-slate-900/78"
-                        >
-                          <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-br from-cyan-300/10 via-transparent to-amber-200/5 opacity-70 transition duration-300 group-hover:opacity-100" />
-
-                          <div className="relative z-10 flex h-full flex-col">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                              <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200">
-                                {label}
-                              </span>
-                              {publicationDate && (
-                                <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-slate-800/65 px-3 py-1 text-[11px] font-medium text-slate-300">
-                                  <Calendar size={12} className="text-cyan-200" /> {publicationDate}
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="mt-5">
-                              <h4 className="text-xl font-semibold leading-tight text-slate-100">{item.title}</h4>
-                              {item.publicationName && (
-                                <p className="mt-3 text-sm leading-relaxed text-cyan-100/90">{item.publicationName}</p>
-                              )}
-                            </div>
-
-                            {hasAuthors && (
-                              <div className="mt-5 rounded-2xl border border-white/10 bg-slate-800/40 p-4">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Authors</p>
-                                <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                                  {item.authors.join(', ')}
-                                </p>
-                              </div>
-                            )}
-
-                            <div className="mt-6 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-                              <div className="text-xs text-slate-500">
-                                {item.publicationDate ? new Date(item.publicationDate).getUTCFullYear() : ''}
-                              </div>
-                              {item.doiLink && (
-                                <a
-                                  href={item.doiLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={() => trackAnalyticsEvent('click', 'research_publication_click', {
-                                    title: item.title,
-                                    type: label,
-                                  })}
-                                  className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-300/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/15"
-                                >
-                                  Read Publication <ExternalLink size={13} />
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </MotionArticle>
-                      );
-                    })}
-                  </div>
-                </MotionDiv>
-              );
-            })}
+                        <div className="shrink-0 text-left md:min-w-[180px] md:text-right">
+                          {publicationDate && (
+                            <p className="text-sm text-slate-300">{publicationDate}</p>
+                          )}
+                          {item.doiLink && (
+                            <a
+                              href={item.doiLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={() => trackAnalyticsEvent('click', 'research_publication_click', {
+                                title: item.title,
+                              })}
+                              className="mt-3 inline-flex items-center gap-2 text-sm text-cyan-200 transition hover:text-cyan-100 md:justify-end"
+                            >
+                              Link <ExternalLink size={14} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </MotionArticle>
+                  );
+                })}
+              </MotionDiv>
+            )}
           </div>
         </MotionSection>
 

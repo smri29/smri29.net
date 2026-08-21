@@ -192,7 +192,7 @@ const ResearchManager = () => {
   return (
     <div>
       <div className="mb-7 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-slate-100">Research Publications</h2>
+        <h2 className="text-2xl font-semibold text-slate-100">Publicaiton</h2>
         <button
           onClick={() => {
             if (isFormOpen && !editingId) {
