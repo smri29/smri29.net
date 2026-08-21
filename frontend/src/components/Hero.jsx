@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Typewriter } from 'react-simple-typewriter';
 import { motion } from 'framer-motion';
 import { Link } from 'react-scroll';
-import { ArrowDown, Brain, Github, Linkedin } from 'lucide-react';
+import { ArrowDown, Brain, Github, Linkedin, Volume2 } from 'lucide-react';
 import API from '../api/axios';
 
 const MotionSection = motion.section;
@@ -17,6 +17,7 @@ const FALLBACK_HERO = {
 
 const Hero = () => {
   const [content, setContent] = useState(FALLBACK_HERO);
+  const audioRef = useRef(null);
 
   useEffect(() => {
     const fetchHeroContent = async () => {
@@ -36,6 +37,49 @@ const Hero = () => {
     };
 
     fetchHeroContent();
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    audio.volume = 0.02;
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    let hasPlayed = false;
+
+    const playOnFirstInteraction = async () => {
+      if (hasPlayed) {
+        return;
+      }
+
+      hasPlayed = true;
+
+      try {
+        await audio.play();
+      } catch (error) {
+        console.warn('Hero audio could not start after user interaction.', error);
+      } finally {
+        window.removeEventListener('pointerdown', playOnFirstInteraction);
+        window.removeEventListener('keydown', playOnFirstInteraction);
+      }
+    };
+
+    window.addEventListener('pointerdown', playOnFirstInteraction, { once: true });
+    window.addEventListener('keydown', playOnFirstInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', playOnFirstInteraction);
+      window.removeEventListener('keydown', playOnFirstInteraction);
+    };
   }, []);
 
   return (
@@ -162,13 +206,39 @@ const Hero = () => {
           className="relative mx-auto w-full max-w-sm"
         >
           <div className="pointer-events-none absolute inset-4 rounded-[28px] bg-gradient-to-br from-cyan-300/15 via-transparent to-amber-200/10 blur-2xl" />
-          <div className="glass-card card-sheen animate-float overflow-hidden border-cyan-300/20 p-3">
+          <div className="glass-card card-sheen animate-float relative overflow-hidden border-cyan-300/20 p-3">
             <img
               src="/smr.jpg"
               alt="Shah Mohammad Rizvi"
               className="aspect-[4/5] w-full rounded-xl object-cover"
               loading="eager"
             />
+
+            <div className="absolute inset-x-6 bottom-6 z-10 rounded-[22px] border border-white/10 bg-slate-950/78 p-4 shadow-[0_16px_32px_rgba(6,10,22,0.34)] backdrop-blur-xl">
+              <div className="mb-3 flex items-center gap-3">
+                <div className="rounded-2xl border border-cyan-300/20 bg-cyan-300/10 p-2 text-cyan-200">
+                  <Volume2 size={16} />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    Audio
+                  </p>
+                  <p className="text-sm font-medium text-slate-100">Sura Ar Rahman</p>
+                </div>
+              </div>
+
+              <audio
+                ref={audioRef}
+                controls
+                preload="metadata"
+                controlsList="nodownload"
+                playsInline
+                className="w-full"
+              >
+                <source src="/Audio/sura/Sura%20Ar%20Rahman.m4a" type="audio/mp4" />
+                Your browser does not support the audio player.
+              </audio>
+            </div>
           </div>
         </MotionDiv>
       </MotionDiv>
