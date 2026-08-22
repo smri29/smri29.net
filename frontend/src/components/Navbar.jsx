@@ -22,7 +22,6 @@ const Navbar = () => {
       { name: 'About', to: 'about', type: 'scroll' },
       { name: 'Publications', to: '/publications', type: 'route' },
       { name: 'Certifications', to: '/certifications', type: 'route' },
-      { name: 'Hobbies', to: 'hobbies', type: 'scroll' },
       { name: 'Contact', to: 'contact', type: 'scroll' },
     ],
     []

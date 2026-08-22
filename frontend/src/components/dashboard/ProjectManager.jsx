@@ -8,7 +8,6 @@ const emptyForm = {
   projectName: '',
   description: '',
   techStack: '',
-  category: 'AI/ML',
   githubLink: '',
   liveLink: '',
   role: 'Lead Developer',
@@ -75,7 +74,6 @@ const ProjectManager = () => {
         .filter(Boolean),
       projectName: formData.projectName,
       description: formData.description,
-      category: formData.category,
       githubLink: formData.githubLink,
       liveLink: formData.liveLink,
       role: formData.role,
@@ -106,7 +104,6 @@ const ProjectManager = () => {
       projectName: project.projectName || '',
       description: project.description || '',
       techStack: Array.isArray(project.techStack) ? project.techStack.join(', ') : '',
-      category: project.category || 'AI/ML',
       githubLink: project.githubLink || '',
       liveLink: project.liveLink || '',
       role: project.role || 'Lead Developer',
@@ -213,20 +210,6 @@ const ProjectManager = () => {
               onChange={(event) => setFormData({ ...formData, projectName: event.target.value })}
               required
             />
-          </div>
-
-          <div className="md:col-span-1">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">Category</label>
-            <select
-              className="w-full rounded-lg border border-white/10 bg-slate-900/50 p-3 text-slate-100 outline-none focus:border-cyan-300/60"
-              value={formData.category}
-              onChange={(event) => setFormData({ ...formData, category: event.target.value })}
-            >
-              <option value="AI/ML">AI/ML</option>
-              <option value="MERN">MERN</option>
-              <option value="Flutter">Flutter</option>
-              <option value="Others">Others</option>
-            </select>
           </div>
 
           <div className="col-span-2">
@@ -360,7 +343,6 @@ const ProjectManager = () => {
                         <div className="flex-1">
                           <div className="mb-1 flex flex-wrap items-center gap-2">
                             <h3 className="text-lg font-semibold text-slate-100">{project.projectName}</h3>
-                            <span className="rounded-full border border-white/15 px-2 py-0.5 text-[10px] text-cyan-200">{project.category}</span>
                           </div>
                           <p className="line-clamp-1 text-sm text-slate-400">{project.description}</p>
                           <div className="mt-2 flex flex-wrap gap-1.5">

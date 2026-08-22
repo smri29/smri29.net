@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Code, ExternalLink, Github } from 'lucide-react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -8,8 +8,6 @@ import InteractiveNetworkBackground from '../components/InteractiveNetworkBackgr
 
 const MotionSection = motion.section;
 const MotionArticle = motion.article;
-
-const PROJECT_CATEGORIES = ['AI/ML', 'MERN', 'Flutter', 'Others'];
 
 const SECTION_VARIANTS = {
   hidden: { opacity: 0, y: 18 },
@@ -48,14 +46,6 @@ const Projects = () => {
     fetchProjects();
   }, []);
 
-  const projectsByCategory = useMemo(() => {
-    return projects.reduce((acc, item) => {
-      const category = PROJECT_CATEGORIES.includes(item.category) ? item.category : 'Others';
-      acc[category].push(item);
-      return acc;
-    }, Object.fromEntries(PROJECT_CATEGORIES.map((category) => [category, []])));
-  }, [projects]);
-
   return (
     <div className="relative min-h-screen overflow-x-hidden text-slate-100">
       <InteractiveNetworkBackground />
@@ -87,119 +77,110 @@ const Projects = () => {
         <div className="mx-auto max-w-7xl">
           {loading ? (
             <p className="text-sm text-slate-400">Loading projects...</p>
+          ) : projects.length === 0 ? (
+            <p className="text-sm text-slate-400">No projects added yet.</p>
           ) : (
-            PROJECT_CATEGORIES.map((category) => {
-              const items = projectsByCategory[category] || [];
-              if (!items.length) return null;
+            <MotionSection
+              variants={SECTION_VARIANTS}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+            >
+              <div className="mb-6 flex items-center gap-3">
+                <Code className="text-cyan-300" size={24} />
+                <h2 className="text-2xl font-semibold text-slate-100 md:text-3xl">All Projects</h2>
+              </div>
 
-              return (
-                <MotionSection
-                  key={category}
-                  variants={SECTION_VARIANTS}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.1 }}
-                  className="mb-14"
-                >
-                  <div className="mb-6 flex items-center gap-3">
-                    <Code className="text-cyan-300" size={24} />
-                    <h2 className="text-2xl font-semibold text-slate-100 md:text-3xl">{category}</h2>
-                  </div>
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+                {projects.map((item) => {
+                  const techStack = Array.isArray(item.techStack) ? item.techStack.filter(Boolean) : [];
 
-                  <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    {items.map((item) => {
-                      const techStack = Array.isArray(item.techStack) ? item.techStack.filter(Boolean) : [];
-
-                      return (
-                        <MotionArticle
-                          key={item._id}
-                          variants={CARD_VARIANTS}
-                          className="glass-card card-sheen group overflow-hidden border-white/10 p-4 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35"
-                        >
-                          <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70">
-                            {item.imageUrl ? (
-                              <img
-                                src={item.imageUrl}
-                                alt={item.projectName}
-                                className="aspect-[16/9.5] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                              />
-                            ) : (
-                              <div className="flex aspect-[16/9.5] w-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800/90 to-cyan-300/10 text-slate-500">
-                                <div className="flex flex-col items-center gap-2">
-                                  <Code size={24} className="text-cyan-200/70" />
-                                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                                    Project Preview
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="mt-4 flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <h3 className="text-lg font-semibold text-slate-100">{item.projectName}</h3>
-                              {item.role && <p className="mt-1 text-xs uppercase tracking-[0.16em] text-cyan-100/90">{item.role}</p>}
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {item.liveLink && (
-                                <a
-                                  href={item.liveLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={() => trackAnalyticsEvent('click', 'project_live_click', {
-                                    projectName: item.projectName,
-                                    category,
-                                    page: 'projects',
-                                  })}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
-                                  aria-label={`Open ${item.projectName} live project`}
-                                >
-                                  <ExternalLink size={15} />
-                                </a>
-                              )}
-                              {item.githubLink && (
-                                <a
-                                  href={item.githubLink}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={() => trackAnalyticsEvent('click', 'project_github_click', {
-                                    projectName: item.projectName,
-                                    category,
-                                    page: 'projects',
-                                  })}
-                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
-                                  aria-label={`Open ${item.projectName} source code`}
-                                >
-                                  <Github size={15} />
-                                </a>
-                              )}
+                  return (
+                    <MotionArticle
+                      key={item._id}
+                      variants={CARD_VARIANTS}
+                      className="glass-card card-sheen group overflow-hidden border-white/10 p-4 transition duration-300 hover:-translate-y-1 hover:border-cyan-300/35"
+                    >
+                      <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70">
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.projectName}
+                            className="aspect-[16/9.5] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="flex aspect-[16/9.5] w-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800/90 to-cyan-300/10 text-slate-500">
+                            <div className="flex flex-col items-center gap-2">
+                              <Code size={24} className="text-cyan-200/70" />
+                              <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                                Project Preview
+                              </span>
                             </div>
                           </div>
+                        )}
+                      </div>
 
-                          {techStack.length > 0 && (
-                            <div className="mt-4 flex flex-wrap gap-1.5">
-                              {techStack.map((tech, index) => (
-                                <span
-                                  key={`${item._id}-${tech}-${index}`}
-                                  className="rounded-full border border-white/12 bg-slate-800/60 px-2.5 py-1 text-[10px] text-slate-200"
-                                >
-                                  {tech}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                      <div className="mt-4 flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-semibold text-slate-100">{item.projectName}</h3>
+                          {item.role && <p className="mt-1 text-xs uppercase tracking-[0.16em] text-cyan-100/90">{item.role}</p>}
+                        </div>
 
-                          {item.description && (
-                            <p className="mt-4 text-sm leading-relaxed text-slate-300">{item.description}</p>
+                        <div className="flex items-center gap-2">
+                          {item.liveLink && (
+                            <a
+                              href={item.liveLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={() => trackAnalyticsEvent('click', 'project_live_click', {
+                                projectName: item.projectName,
+                                page: 'projects',
+                              })}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                              aria-label={`Open ${item.projectName} live project`}
+                            >
+                              <ExternalLink size={15} />
+                            </a>
                           )}
-                        </MotionArticle>
-                      );
-                    })}
-                  </div>
-                </MotionSection>
-              );
-            })
+                          {item.githubLink && (
+                            <a
+                              href={item.githubLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={() => trackAnalyticsEvent('click', 'project_github_click', {
+                                projectName: item.projectName,
+                                page: 'projects',
+                              })}
+                              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                              aria-label={`Open ${item.projectName} source code`}
+                            >
+                              <Github size={15} />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {techStack.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-1.5">
+                          {techStack.map((tech, index) => (
+                            <span
+                              key={`${item._id}-${tech}-${index}`}
+                              className="rounded-full border border-white/12 bg-slate-800/60 px-2.5 py-1 text-[10px] text-slate-200"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {item.description && (
+                        <p className="mt-4 text-sm leading-relaxed text-slate-300">{item.description}</p>
+                      )}
+                    </MotionArticle>
+                  );
+                })}
+              </div>
+            </MotionSection>
           )}
         </div>
       </main>

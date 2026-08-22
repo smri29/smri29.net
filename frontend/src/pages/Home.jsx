@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Briefcase,
   Calendar,
@@ -36,8 +36,6 @@ const HEADER_VARIANTS = {
   hidden: { opacity: 0, y: 16 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' } },
 };
-
-const PROJECT_CATEGORIES = ['AI/ML', 'MERN', 'Flutter', 'Others'];
 
 const CARD_STAGGER = {
   hidden: { opacity: 0, y: 16 },
@@ -91,8 +89,6 @@ const Home = () => {
   const [education, setEducation] = useState([]);
   const [hobbies, setHobbies] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const [activeProjectCategory, setActiveProjectCategory] = useState(null);
   const [expandedProjects, setExpandedProjects] = useState({});
 
   useEffect(() => {
@@ -119,35 +115,9 @@ const Home = () => {
     fetchData();
   }, []);
 
-  const projectsByCategory = useMemo(() => {
-    return projects.reduce((acc, item) => {
-      const category = PROJECT_CATEGORIES.includes(item.category) ? item.category : 'Others';
-      acc[category].push(item);
-      return acc;
-    }, Object.fromEntries(PROJECT_CATEGORIES.map((category) => [category, []])));
-  }, [projects]);
-
-  const availableProjectCategories = useMemo(
-    () => PROJECT_CATEGORIES.filter((category) => (projectsByCategory[category] || []).length > 0),
-    [projectsByCategory]
-  );
-
   const toggleProject = (id) => {
     setExpandedProjects((prev) => ({ ...prev, [id]: !prev[id] }));
   };
-
-  useEffect(() => {
-    if (!availableProjectCategories.length) {
-      setActiveProjectCategory(null);
-      return;
-    }
-
-    setActiveProjectCategory((current) =>
-      availableProjectCategories.includes(current) ? current : availableProjectCategories[0]
-    );
-  }, [availableProjectCategories]);
-
-  const activeProjects = activeProjectCategory ? projectsByCategory[activeProjectCategory] || [] : [];
   const hobbiesSplitIndex = Math.ceil(hobbies.length / 2);
   const hobbyColumns = [hobbies.slice(0, hobbiesSplitIndex), hobbies.slice(hobbiesSplitIndex)];
 
@@ -254,199 +224,163 @@ const Home = () => {
 
             {loading ? (
               <p className="text-sm text-slate-400">Loading projects...</p>
-            ) : availableProjectCategories.length > 0 ? (
-              <>
-                <div className="mb-6 flex flex-wrap gap-3">
-                  {availableProjectCategories.map((category) => (
-                    <button
-                      key={category}
-                      type="button"
-                      onClick={() => setActiveProjectCategory(category)}
-                      className={`rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] transition ${
-                        activeProjectCategory === category
-                          ? 'border-cyan-300/40 bg-cyan-300/12 text-cyan-100'
-                          : 'border-white/10 bg-slate-800/70 text-slate-300 hover:border-cyan-300/35 hover:text-cyan-200'
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
+            ) : projects.length > 0 ? (
+              <MotionDiv
+                variants={CARD_STAGGER}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.15 }}
+              >
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {projects.map((item) => {
+                    const isExpanded = Boolean(expandedProjects[item._id]);
+                    const techStack = Array.isArray(item.techStack) ? item.techStack : [];
+                    const visibleTechStack = isExpanded ? techStack : techStack.slice(0, 4);
+                    const hasMoreTech = techStack.length > visibleTechStack.length;
+                    const hasContributors = Array.isArray(item.contributors) && item.contributors.length > 0;
+                    const canExpand =
+                      hasContributors || Boolean(item.role) || techStack.length > 5 || (item.description || '').length > 180;
 
-                <AnimatePresence mode="wait">
-                  {activeProjectCategory && (
-                    <MotionDiv
-                      key={activeProjectCategory}
-                      variants={CARD_STAGGER}
-                      initial="hidden"
-                      animate="visible"
-                      exit={{ opacity: 0, y: -10, transition: { duration: 0.2, ease: 'easeOut' } }}
-                    >
-                      <div className="mb-5 flex items-center gap-3">
-                        <span className="section-kicker">Selected Category</span>
-                        <h3 className="text-xl font-semibold text-slate-100 md:text-[1.7rem]">
-                          {activeProjectCategory}
-                        </h3>
-                      </div>
+                    return (
+                      <MotionArticle
+                        key={item._id}
+                        variants={CARD_ITEM}
+                        className="glass-card card-sheen group relative overflow-hidden rounded-[24px] border-white/10 bg-slate-900/58 p-3.5 shadow-[0_16px_42px_rgba(6,10,22,0.18)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:bg-slate-900/78 md:p-4"
+                      >
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-cyan-300/10 via-transparent to-amber-200/5 opacity-70 transition duration-300 group-hover:opacity-100" />
 
-                      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {activeProjects.map((item) => {
-                          const isExpanded = Boolean(expandedProjects[item._id]);
-                          const techStack = Array.isArray(item.techStack) ? item.techStack : [];
-                          const visibleTechStack = isExpanded ? techStack : techStack.slice(0, 4);
-                          const hasMoreTech = techStack.length > visibleTechStack.length;
-                          const hasContributors = Array.isArray(item.contributors) && item.contributors.length > 0;
-                          const canExpand =
-                            hasContributors || Boolean(item.role) || techStack.length > 5 || (item.description || '').length > 180;
-
-                          return (
-                            <MotionArticle
-                              key={item._id}
-                              variants={CARD_ITEM}
-                              className="glass-card card-sheen group relative overflow-hidden rounded-[24px] border-white/10 bg-slate-900/58 p-3.5 shadow-[0_16px_42px_rgba(6,10,22,0.18)] transition duration-300 hover:-translate-y-1 hover:border-cyan-300/30 hover:bg-slate-900/78 md:p-4"
-                            >
-                              <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-br from-cyan-300/10 via-transparent to-amber-200/5 opacity-70 transition duration-300 group-hover:opacity-100" />
-
-                              <div className="relative z-10 flex h-full flex-col">
-                                <div className="mb-3 overflow-hidden rounded-[16px] border border-white/10 bg-slate-900/70">
-                                  {item.imageUrl ? (
-                                    <img
-                                      src={item.imageUrl}
-                                      alt={item.projectName}
-                                      className="aspect-[16/9.5] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                                    />
-                                  ) : (
-                                    <div className="flex aspect-[16/8.5] w-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800/90 to-cyan-300/10 text-slate-500">
-                                      <div className="flex flex-col items-center gap-2">
-                                        <Code size={24} className="text-cyan-200/70" />
-                                        <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
-                                          Project Preview
-                                        </span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-200">
-                                    {item.category || activeProjectCategory}
+                        <div className="relative z-10 flex h-full flex-col">
+                          <div className="mb-3 overflow-hidden rounded-[16px] border border-white/10 bg-slate-900/70">
+                            {item.imageUrl ? (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.projectName}
+                                className="aspect-[16/9.5] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+                              />
+                            ) : (
+                              <div className="flex aspect-[16/8.5] w-full items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800/90 to-cyan-300/10 text-slate-500">
+                                <div className="flex flex-col items-center gap-2">
+                                  <Code size={24} className="text-cyan-200/70" />
+                                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">
+                                    Project Preview
                                   </span>
-                                  <div className="flex items-center gap-2">
-                                    {item.liveLink && (
-                                      <a
-                                        href={item.liveLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        onClick={() => trackAnalyticsEvent('click', 'project_live_click', {
-                                          projectName: item.projectName,
-                                          category: item.category || activeProjectCategory,
-                                        })}
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
-                                        aria-label={`Open ${item.projectName} live project`}
-                                      >
-                                        <ExternalLink size={15} />
-                                      </a>
-                                    )}
-                                    {item.githubLink && (
-                                      <a
-                                        href={item.githubLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        onClick={() => trackAnalyticsEvent('click', 'project_github_click', {
-                                          projectName: item.projectName,
-                                          category: item.category || activeProjectCategory,
-                                        })}
-                                        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
-                                        aria-label={`Open ${item.projectName} source code`}
-                                      >
-                                        <Github size={15} />
-                                      </a>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="mt-3">
-                                  <h4 className="text-base font-semibold leading-tight text-slate-100 md:text-[1.05rem]">
-                                    {item.projectName}
-                                  </h4>
-                                  {item.role && <p className="mt-1 text-xs uppercase tracking-[0.16em] text-cyan-100/90">{item.role}</p>}
-                                </div>
-
-                                {visibleTechStack.length > 0 && (
-                                  <div className="mt-3 flex flex-wrap gap-1.5">
-                                    {visibleTechStack.map((tech, idx) => (
-                                      <span
-                                        key={`${tech}-${idx}`}
-                                        className="rounded-full border border-white/12 bg-slate-800/60 px-2.5 py-1 text-[10px] text-slate-200"
-                                      >
-                                        {tech}
-                                      </span>
-                                    ))}
-                                    {hasMoreTech && (
-                                      <span className="rounded-full border border-white/12 bg-slate-800/35 px-2.5 py-1 text-[10px] text-slate-400">
-                                        +{techStack.length - visibleTechStack.length}
-                                      </span>
-                                    )}
-                                  </div>
-                                )}
-
-                                <p className={`mt-3 text-sm leading-relaxed text-slate-300 ${isExpanded ? '' : 'line-clamp-3'}`}>
-                                  {item.description}
-                                </p>
-
-                                {isExpanded && hasContributors && (
-                                  <div className="mt-4 rounded-2xl border border-white/10 bg-slate-800/40 p-4">
-                                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Collaborators</p>
-                                    <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                                      {item.contributors.join(', ')}
-                                    </p>
-                                  </div>
-                                )}
-
-                                <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-xs">
-                                  <div className="flex items-center gap-3">
-                                    {item.liveLink && (
-                                      <a
-                                        href={item.liveLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1.5 text-cyan-200 transition hover:text-cyan-100"
-                                      >
-                                        <ExternalLink size={12} /> Live
-                                      </a>
-                                    )}
-                                    {item.githubLink && (
-                                      <a
-                                        href={item.githubLink}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="inline-flex items-center gap-1.5 text-slate-300 transition hover:text-cyan-200"
-                                      >
-                                        <Github size={12} /> Code
-                                      </a>
-                                    )}
-                                  </div>
-
-                                  {canExpand && (
-                                    <button
-                                      onClick={() => toggleProject(item._id)}
-                                      type="button"
-                                      className="inline-flex items-center gap-1 text-slate-400 transition hover:text-cyan-200"
-                                    >
-                                      {isExpanded ? 'Show Less' : 'More Details'}
-                                      {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-                                    </button>
-                                  )}
                                 </div>
                               </div>
-                            </MotionArticle>
-                          );
-                        })}
-                      </div>
-                    </MotionDiv>
-                  )}
-                </AnimatePresence>
-              </>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap items-start justify-end gap-3">
+                            <div className="flex items-center gap-2">
+                              {item.liveLink && (
+                                <a
+                                  href={item.liveLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={() => trackAnalyticsEvent('click', 'project_live_click', {
+                                    projectName: item.projectName,
+                                  })}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                                  aria-label={`Open ${item.projectName} live project`}
+                                >
+                                  <ExternalLink size={15} />
+                                </a>
+                              )}
+                              {item.githubLink && (
+                                <a
+                                  href={item.githubLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={() => trackAnalyticsEvent('click', 'project_github_click', {
+                                    projectName: item.projectName,
+                                  })}
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                                  aria-label={`Open ${item.projectName} source code`}
+                                >
+                                  <Github size={15} />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-3">
+                            <h4 className="text-base font-semibold leading-tight text-slate-100 md:text-[1.05rem]">
+                              {item.projectName}
+                            </h4>
+                            {item.role && <p className="mt-1 text-xs uppercase tracking-[0.16em] text-cyan-100/90">{item.role}</p>}
+                          </div>
+
+                          {visibleTechStack.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {visibleTechStack.map((tech, idx) => (
+                                <span
+                                  key={`${tech}-${idx}`}
+                                  className="rounded-full border border-white/12 bg-slate-800/60 px-2.5 py-1 text-[10px] text-slate-200"
+                                >
+                                  {tech}
+                                </span>
+                              ))}
+                              {hasMoreTech && (
+                                <span className="rounded-full border border-white/12 bg-slate-800/35 px-2.5 py-1 text-[10px] text-slate-400">
+                                  +{techStack.length - visibleTechStack.length}
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          <p className={`mt-3 text-sm leading-relaxed text-slate-300 ${isExpanded ? '' : 'line-clamp-3'}`}>
+                            {item.description}
+                          </p>
+
+                          {isExpanded && hasContributors && (
+                            <div className="mt-4 rounded-2xl border border-white/10 bg-slate-800/40 p-4">
+                              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">Collaborators</p>
+                              <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                                {item.contributors.join(', ')}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-xs">
+                            <div className="flex items-center gap-3">
+                              {item.liveLink && (
+                                <a
+                                  href={item.liveLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-cyan-200 transition hover:text-cyan-100"
+                                >
+                                  <ExternalLink size={12} /> Live
+                                </a>
+                              )}
+                              {item.githubLink && (
+                                <a
+                                  href={item.githubLink}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-slate-300 transition hover:text-cyan-200"
+                                >
+                                  <Github size={12} /> Code
+                                </a>
+                              )}
+                            </div>
+
+                            {canExpand && (
+                              <button
+                                onClick={() => toggleProject(item._id)}
+                                type="button"
+                                className="inline-flex items-center gap-1 text-slate-400 transition hover:text-cyan-200"
+                              >
+                                {isExpanded ? 'Show Less' : 'More Details'}
+                                {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </MotionArticle>
+                    );
+                  })}
+                </div>
+              </MotionDiv>
             ) : (
               <p className="text-sm text-slate-400">No projects added yet.</p>
             )}

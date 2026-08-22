@@ -11,7 +11,6 @@ const nodemailer = require('nodemailer');
 const { cloudinary, hasCloudinaryConfig } = require('../config/cloudinary');
 const { recordAnalyticsEvent } = require('./analyticsController');
 
-const PROJECT_CATEGORIES = new Set(['AI/ML', 'MERN', 'Flutter', 'Others']);
 const RESEARCH_TYPES = new Set(['Journal', 'Conference']);
 const CERTIFICATE_CATEGORIES = new Set(['AI/ML', 'Kaggle', 'Research', 'Professional', 'Others']);
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -232,7 +231,6 @@ const serializeProject = (item) => ({
   projectName: item.projectName || '',
   description: item.description || '',
   techStack: Array.isArray(item.techStack) ? item.techStack : [],
-  category: item.category || 'Others',
   githubLink: item.githubLink || '',
   liveLink: item.liveLink || '',
   role: item.role || '',
@@ -388,7 +386,6 @@ exports.addProject = async (req, res) => {
     projectName: normalizeString(req.body.projectName, 200),
     description: normalizeString(req.body.description, 5000),
     techStack: normalizeList(req.body.techStack),
-    category: normalizeString(req.body.category, 20) || 'Others',
     githubLink: normalizeString(req.body.githubLink, 2048),
     liveLink: normalizeString(req.body.liveLink, 2048),
     role: normalizeString(req.body.role, 200) || 'Lead Developer',
@@ -399,10 +396,6 @@ exports.addProject = async (req, res) => {
 
   if (!payload.projectName || !payload.description) {
     return res.status(400).json({ message: 'Project name and description are required' });
-  }
-
-  if (!PROJECT_CATEGORIES.has(payload.category)) {
-    return res.status(400).json({ message: 'Invalid project category' });
   }
 
   if (!isValidUrl(payload.githubLink) || !isValidUrl(payload.liveLink)) {
@@ -431,16 +424,11 @@ exports.updateProject = async (req, res) => {
     ...(req.body.projectName !== undefined && { projectName: normalizeString(req.body.projectName, 200) }),
     ...(req.body.description !== undefined && { description: normalizeString(req.body.description, 5000) }),
     ...(req.body.techStack !== undefined && { techStack: normalizeList(req.body.techStack) }),
-    ...(req.body.category !== undefined && { category: normalizeString(req.body.category, 20) }),
     ...(req.body.githubLink !== undefined && { githubLink: normalizeString(req.body.githubLink, 2048) }),
     ...(req.body.liveLink !== undefined && { liveLink: normalizeString(req.body.liveLink, 2048) }),
     ...(req.body.role !== undefined && { role: normalizeString(req.body.role, 200) }),
     ...(req.body.contributors !== undefined && { contributors: normalizeList(req.body.contributors) }),
   };
-
-  if (update.category && !PROJECT_CATEGORIES.has(update.category)) {
-    return res.status(400).json({ message: 'Invalid project category' });
-  }
 
   if ((update.githubLink !== undefined && !isValidUrl(update.githubLink)) || (update.liveLink !== undefined && !isValidUrl(update.liveLink))) {
     return res.status(400).json({ message: 'Invalid GitHub or live URL' });

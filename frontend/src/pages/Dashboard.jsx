@@ -35,7 +35,7 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0d1625] text-slate-100">
+    <div className="admin-theme flex h-screen overflow-hidden text-slate-100">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -45,7 +45,7 @@ const Dashboard = () => {
 
       <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden p-5 lg:p-8">
         <div className="mx-auto w-full max-w-[1380px]">
-          <div className="mb-5 flex flex-wrap gap-2 md:hidden">
+          <div className="admin-surface mb-5 flex flex-wrap gap-2 rounded-3xl p-3 md:hidden">
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -53,8 +53,8 @@ const Dashboard = () => {
                 onClick={() => setActiveTab(tab)}
                 className={`rounded-full px-3 py-1.5 text-xs uppercase tracking-wide ${
                   activeTab === tab
-                    ? 'bg-cyan-300 text-slate-950'
-                    : 'border border-white/15 text-slate-300'
+                    ? 'admin-chip'
+                    : 'border border-white/15 bg-slate-950/30 text-slate-300'
                 }`}
               >
                 {tab}
@@ -64,7 +64,7 @@ const Dashboard = () => {
 
           <h1 className="mb-7 font-serif text-3xl capitalize text-slate-100 md:text-4xl">
             Manage{' '}
-            <span className="bg-gradient-to-r from-cyan-200 to-amber-200 bg-clip-text text-transparent">
+            <span className="admin-heading-accent">
               {activeTab === 'hobbies' ? 'Interests and Hobbies' : activeTab}
             </span>
           </h1>

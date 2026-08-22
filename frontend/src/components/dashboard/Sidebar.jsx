@@ -48,7 +48,7 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
 
   return (
     <aside
-      className={`hidden h-full min-h-0 flex-col overflow-hidden border-r border-white/10 bg-slate-900/80 transition-all duration-300 md:flex ${
+      className={`admin-sidebar hidden h-full min-h-0 flex-col overflow-hidden border-r border-white/10 transition-all duration-300 md:flex ${
         isCollapsed ? 'w-24' : 'w-72'
       }`}
     >
@@ -65,7 +65,7 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
           <button
             type="button"
             onClick={() => setIsCollapsed((current) => !current)}
-            className="rounded-lg border border-white/10 p-2 text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-100"
+            className="rounded-lg border border-white/10 bg-slate-950/35 p-2 text-slate-300 transition hover:border-cyan-300/40 hover:text-cyan-100"
             aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -83,8 +83,8 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
             title={item.label}
             className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left text-sm transition ${
               activeTab === item.id
-                ? 'border border-cyan-300/45 bg-cyan-300/15 text-cyan-100'
-                : 'border border-transparent text-slate-300 hover:border-white/10 hover:bg-slate-800/70 hover:text-slate-100'
+                ? 'admin-chip'
+                : 'border border-transparent bg-transparent text-slate-300 hover:border-white/10 hover:bg-slate-800/60 hover:text-slate-100'
             } ${isCollapsed ? 'justify-center px-3' : ''}`}
           >
             {item.icon}

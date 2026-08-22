@@ -200,7 +200,6 @@ const buildKnowledgeBase = ({
       (projects || []).slice(0, 12).map((item) =>
         [
           item.projectName,
-          item.category,
           item.role,
           Array.isArray(item.techStack) && item.techStack.length > 0
             ? `Tech: ${item.techStack.join(', ')}`

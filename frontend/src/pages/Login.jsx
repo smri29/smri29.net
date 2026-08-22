@@ -50,14 +50,18 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-dark-bg px-6 py-16 text-slate-100">
-      <div className="pointer-events-none absolute inset-0 subtle-grid opacity-[0.12]" />
+    <div className="admin-theme relative min-h-screen overflow-hidden px-6 py-16 text-slate-100">
+      <div className="pointer-events-none absolute inset-0 subtle-grid opacity-[0.14]" />
       <div className="pointer-events-none absolute -left-16 top-12 h-56 w-56 rounded-full bg-cyan-300/12 blur-[90px]" />
-      <div className="pointer-events-none absolute -right-12 bottom-12 h-48 w-48 rounded-full bg-amber-200/10 blur-[90px]" />
+      <div className="pointer-events-none absolute right-[8%] top-[18%] h-40 w-40 rounded-full bg-[#ff4ec2]/12 blur-[80px]" />
+      <div className="pointer-events-none absolute -right-12 bottom-12 h-48 w-48 rounded-full bg-[#33ff88]/10 blur-[90px]" />
       <div className="relative mx-auto max-w-md">
         <div className="glass-card card-sheen border-cyan-300/25 p-8 md:p-10">
+          <div className="admin-chip mb-5 inline-flex rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em]">
+            Admin Portal
+          </div>
           <h1 className="font-serif text-3xl text-slate-100">
-            Admin <span className="text-cyan-200">Access</span>
+            Admin <span className="admin-heading-accent">Access</span>
           </h1>
           <p className="mt-2 text-sm text-slate-400">Portfolio content management dashboard.</p>
 
@@ -87,7 +91,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-2xl border border-cyan-300/40 bg-cyan-300 py-3 text-sm font-bold uppercase tracking-wider text-slate-950 shadow-[0_16px_36px_rgba(34,211,238,0.14)] transition hover:-translate-y-0.5 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+              className="admin-primary-button w-full rounded-2xl border py-3 text-sm font-bold uppercase tracking-wider transition hover:-translate-y-0.5 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? 'Authorizing...' : 'Authorize'}
             </button>

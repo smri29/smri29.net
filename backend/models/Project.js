@@ -14,11 +14,6 @@ const projectSchema = new mongoose.Schema({
     type: String, // e.g., ["React", "PyTorch", "FastAPI"]
     trim: true
   }],
-  category: {
-    type: String,
-    enum: ['AI/ML', 'MERN', 'Flutter', 'Others'],
-    default: 'Others'
-  },
   githubLink: {
     type: String,
     trim: true
