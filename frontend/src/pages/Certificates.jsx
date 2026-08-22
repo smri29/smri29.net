@@ -108,7 +108,6 @@ const Certificates = () => {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-slate-900/72 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between md:px-8">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.24em] text-cyan-200">Portfolio</p>
             <h1 className="font-serif text-3xl text-slate-100 md:text-4xl">
               <span className="text-cyan-200">Certificates</span>
             </h1>
