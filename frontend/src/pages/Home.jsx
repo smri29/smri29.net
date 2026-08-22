@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  BookOpen,
   Briefcase,
   Calendar,
   ChevronDown,
@@ -86,26 +85,7 @@ const getExperienceRange = (job) => {
   return job.duration || 'Dates not provided';
 };
 
-const formatPublicationDate = (value) => {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
-};
-
 const Home = () => {
-  const [research, setResearch] = useState([]);
   const [projects, setProjects] = useState([]);
   const [experience, setExperience] = useState([]);
   const [education, setEducation] = useState([]);
@@ -118,15 +98,13 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [researchRes, projectRes, expRes, educationRes, hobbyRes] = await Promise.all([
-          API.get('/data/research'),
+        const [projectRes, expRes, educationRes, hobbyRes] = await Promise.all([
           API.get('/data/projects'),
           API.get('/data/experience'),
           API.get('/data/education'),
           API.get('/data/hobbies'),
         ]);
 
-        setResearch(Array.isArray(researchRes.data) ? researchRes.data : []);
         setProjects(Array.isArray(projectRes.data) ? projectRes.data : []);
         setExperience(Array.isArray(expRes.data) ? expRes.data : []);
         setEducation(Array.isArray(educationRes.data) ? educationRes.data : []);
@@ -140,14 +118,6 @@ const Home = () => {
 
     fetchData();
   }, []);
-
-  const sortedResearch = useMemo(() => {
-    return [...research].sort((a, b) => {
-      const aTime = a?.publicationDate ? new Date(a.publicationDate).getTime() : 0;
-      const bTime = b?.publicationDate ? new Date(b.publicationDate).getTime() : 0;
-      return bTime - aTime;
-    });
-  }, [research]);
 
   const projectsByCategory = useMemo(() => {
     return projects.reduce((acc, item) => {
@@ -470,80 +440,6 @@ const Home = () => {
               </>
             ) : (
               <p className="text-sm text-slate-400">No projects added yet.</p>
-            )}
-          </div>
-        </MotionSection>
-
-        <MotionSection
-          id="research"
-          variants={SECTION_VARIANTS}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
-        >
-          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
-          <div className="relative z-10 mx-auto max-w-6xl">
-            <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
-              <BookOpen className="text-cyan-300" size={28} />
-              <h2 className="section-title">
-                <span className="text-cyan-200">Publicaiton</span>
-              </h2>
-            </MotionDiv>
-
-            {sortedResearch.length === 0 ? (
-              <p className="text-sm text-slate-400">No publications added yet.</p>
-            ) : (
-              <MotionDiv
-                variants={CARD_STAGGER}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.15 }}
-              >
-                {sortedResearch.map((item, index) => {
-                  const publicationDate = formatPublicationDate(item.publicationDate);
-                  const authors = Array.isArray(item.authors) ? item.authors.filter(Boolean) : [];
-
-                  return (
-                    <MotionArticle
-                      key={item._id}
-                      variants={CARD_ITEM}
-                      className={`px-1 py-5 transition duration-300 md:px-2 ${
-                        index !== sortedResearch.length - 1 ? 'border-b border-white/10' : ''
-                      }`}
-                    >
-                      <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <h3 className="text-lg font-semibold leading-snug text-slate-100">{item.title}</h3>
-
-                          {authors.length > 0 && (
-                            <p className="mt-3 text-sm leading-relaxed text-slate-300">{authors.join(', ')}</p>
-                          )}
-                        </div>
-
-                        <div className="shrink-0 text-left md:min-w-[180px] md:text-right">
-                          {publicationDate && (
-                            <p className="text-sm text-slate-300">{publicationDate}</p>
-                          )}
-                          {item.doiLink && (
-                            <a
-                              href={item.doiLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              onClick={() => trackAnalyticsEvent('click', 'research_publication_click', {
-                                title: item.title,
-                              })}
-                              className="mt-3 inline-flex items-center gap-2 text-sm text-cyan-200 transition hover:text-cyan-100 md:justify-end"
-                            >
-                              Link <ExternalLink size={14} />
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    </MotionArticle>
-                  );
-                })}
-              </MotionDiv>
             )}
           </div>
         </MotionSection>

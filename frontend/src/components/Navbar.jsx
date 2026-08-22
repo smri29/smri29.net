@@ -22,7 +22,7 @@ const Navbar = () => {
       { name: 'About', to: 'about', type: 'scroll' },
       { name: 'Experience', to: 'experience', type: 'scroll' },
       { name: 'Projects', to: 'projects', type: 'scroll' },
-      { name: 'Research', to: 'research', type: 'scroll' },
+      { name: 'Publications', to: '/publications', type: 'route' },
       { name: 'Skills', to: 'skills', type: 'scroll' },
       { name: 'Certifications', to: '/certifications', type: 'route' },
       { name: 'Hobbies', to: 'hobbies', type: 'scroll' },
@@ -114,7 +114,9 @@ const Navbar = () => {
                     key={link.to}
                     to={link.to}
                     onClick={() => {
-                      trackAnalyticsEvent('click', 'mobile_nav_section_click', { section: 'certifications_page' });
+                      trackAnalyticsEvent('click', 'mobile_nav_section_click', {
+                        section: link.to === '/certifications' ? 'certifications_page' : 'publications_page',
+                      });
                       setIsOpen(false);
                     }}
                     className="rounded-lg border border-transparent px-3 py-2 text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-200"
