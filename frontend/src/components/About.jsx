@@ -5,7 +5,6 @@ import {
   BookOpen,
   BookOpenText,
   Briefcase,
-  Cpu,
   GraduationCap,
   Heart,
   Sparkles,
@@ -20,7 +19,6 @@ const ICON_MAP = {
   education: GraduationCap,
   research: BookOpen,
   leadership: Briefcase,
-  skills: Cpu,
   interests: Heart,
   highlight: Sparkles,
 };

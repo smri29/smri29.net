@@ -7,7 +7,6 @@ const Education = require('../models/Education');
 const Project = require('../models/Project');
 const Research = require('../models/Research');
 const Certificate = require('../models/Certificate');
-const Skill = require('../models/Skill');
 const Hobby = require('../models/Hobby');
 const { recordAnalyticsEvent } = require('./analyticsController');
 
@@ -131,18 +130,10 @@ const buildKnowledgeBase = ({
   projects,
   research,
   certificates,
-  skills,
   hobbies,
 }) => {
   const introHighlights = Array.isArray(introduction?.highlights)
     ? introduction.highlights.map((item) => `${item.title}: ${item.detail}`)
-    : [];
-
-  const skillSections = Array.isArray(skills)
-    ? skills.map((item) => {
-        const values = Array.isArray(item.skillsList) ? item.skillsList.filter(Boolean).join(', ') : '';
-        return values ? `${item.category}: ${values}` : item.category;
-      })
     : [];
 
   const sections = [
@@ -244,7 +235,6 @@ const buildKnowledgeBase = ({
           .join(' | ')
       )
     ),
-    formatSection('SKILLS', skillSections),
     formatSection(
       'INTERESTS AND HOBBIES',
       (hobbies || []).map((item) => [item.name, item.description].filter(Boolean).join(' | '))
@@ -266,7 +256,6 @@ const fetchKnowledgeContext = async () => {
     projects,
     research,
     certificates,
-    skills,
     hobbies,
   ] = await Promise.all([
     AISettings.findOne().lean(),
@@ -277,7 +266,6 @@ const fetchKnowledgeContext = async () => {
     Project.find().sort({ order: 1, createdAt: -1 }).lean(),
     Research.find().sort({ order: 1, createdAt: -1 }).lean(),
     Certificate.find().sort({ order: 1, createdAt: -1 }).lean(),
-    Skill.find().sort({ order: 1, createdAt: -1 }).lean(),
     Hobby.find().sort({ order: 1, createdAt: -1 }).lean(),
   ]);
 
@@ -291,7 +279,6 @@ const fetchKnowledgeContext = async () => {
     projects,
     research,
     certificates,
-    skills,
     hobbies,
   });
 

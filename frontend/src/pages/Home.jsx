@@ -13,6 +13,7 @@ import {
   MapPin,
   Smile,
 } from 'lucide-react';
+import { Link as RouterLink } from 'react-router-dom';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
 import About from '../components/About';
@@ -21,7 +22,6 @@ import Contact from '../components/Contact';
 import Hero from '../components/Hero';
 import InteractiveNetworkBackground from '../components/InteractiveNetworkBackground';
 import Navbar from '../components/Navbar';
-import Skills from '../components/Skills';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -236,11 +236,20 @@ const Home = () => {
         >
           <InteractiveNetworkBackground className="absolute inset-0 z-0" />
           <div className="relative z-10 mx-auto max-w-6xl">
-            <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
-              <Code className="text-cyan-300" size={28} />
-              <h2 className="section-title">
-                Technical <span className="text-cyan-200">Projects</span>
-              </h2>
+            <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Code className="text-cyan-300" size={28} />
+                <h2 className="section-title">
+                  <span className="text-cyan-200">Projects</span>
+                </h2>
+              </div>
+              <RouterLink
+                to="/projects"
+                onClick={() => trackAnalyticsEvent('click', 'projects_view_all_click', { source: 'home_section' })}
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-800/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-200"
+              >
+                View All
+              </RouterLink>
             </MotionDiv>
 
             {loading ? (
@@ -443,9 +452,6 @@ const Home = () => {
             )}
           </div>
         </MotionSection>
-
-        <Skills />
-
         <MotionSection
           id="education"
           variants={SECTION_VARIANTS}

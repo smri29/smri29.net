@@ -15,7 +15,6 @@ const {
     getCertificates, addCertificate, updateCertificate, deleteCertificate,
     getHeroContent, updateHeroContent,
     getIntroduction, updateIntroduction,
-    getSkills, updateSkills, deleteSkill,
     getExperience, addExperience, updateExperience, deleteExperience, // NEW
     getEducation, addEducation, updateEducation, deleteEducation,
     getHobbies, addHobby, updateHobby, deleteHobby, // NEW
@@ -28,7 +27,6 @@ router.get('/research', publicContentCache, getResearch);
 router.get('/certificates', publicContentCache, getCertificates);
 router.get('/hero', publicContentCache, getHeroContent);
 router.get('/introduction', publicContentCache, getIntroduction);
-router.get('/skills', publicContentCache, getSkills);
 router.get('/experience', publicContentCache, getExperience); // NEW
 router.get('/education', publicContentCache, getEducation);
 router.get('/hobbies', publicContentCache, getHobbies);       // NEW
@@ -51,9 +49,6 @@ router.route('/certificates/:id').put(noStore, requireAllowedOrigin, adminRateLi
 router.route('/hero').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateHeroContent);
 router.route('/introduction').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateIntroduction);
 router.route('/ai-settings').get(noStore, requireAllowedOrigin, adminRateLimiter, protect, getAISettings).post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateAISettings);
-
-router.route('/skills').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateSkills);
-router.route('/skills/:id').delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteSkill);
 
 // NEW: EXPERIENCE ROUTES
 router.route('/experience').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addExperience);

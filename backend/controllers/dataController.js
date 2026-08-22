@@ -1,7 +1,6 @@
 const Research = require('../models/Research');
 const Project = require('../models/Project');
 const Certificate = require('../models/Certificate');
-const Skill = require('../models/Skill');
 const Message = require('../models/Message');
 const HeroContent = require('../models/HeroContent');
 const Introduction = require('../models/Introduction');
@@ -288,7 +287,6 @@ exports.reorderItems = async (req, res) => {
   if (type === 'research') Model = Research;
   else if (type === 'projects') Model = Project;
   else if (type === 'certificates') Model = Certificate;
-  else if (type === 'skills') Model = Skill;
   else if (type === 'experience') Model = Experience;
   else if (type === 'education') Model = Education;
   else if (type === 'hobbies') Model = Hobby;
@@ -617,45 +615,6 @@ exports.updateIntroduction = async (req, res) => {
 
   return res.json(serializeIntroduction(updated.toObject()));
 };
-
-exports.getSkills = getAll(Skill);
-exports.updateSkills = async (req, res) => {
-  const id = normalizeString(req.body.id, 100);
-  const category = normalizeString(req.body.category, 100);
-  const skillsList = normalizeList(req.body.skillsList);
-
-  if (!category) {
-    return res.status(400).json({ message: 'Category is required' });
-  }
-
-  if (id) {
-    const duplicate = await Skill.findOne({ category, _id: { $ne: id } }).lean();
-    if (duplicate) {
-      return res.status(400).json({ message: 'A category with this name already exists' });
-    }
-
-    const updated = await Skill.findByIdAndUpdate(
-      id,
-      { category, skillsList },
-      { new: true, runValidators: true }
-    );
-
-    if (!updated) {
-      return res.status(404).json({ message: 'Category not found' });
-    }
-
-    return res.json(updated);
-  }
-
-  const updated = await Skill.findOneAndUpdate(
-    { category },
-    { category, skillsList },
-    { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
-  );
-
-  return res.json(updated);
-};
-exports.deleteSkill = deleteItem(Skill);
 
 exports.getExperience = async (req, res) => {
   const items = await Experience.find().sort(getModelSort(Experience)).lean();

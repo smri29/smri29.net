@@ -8,6 +8,7 @@ import API, { getAdminToken, setAdminToken } from './api/axios';
 
 const Home = lazy(() => import('./pages/Home'));
 const Certificates = lazy(() => import('./pages/Certificates'));
+const Projects = lazy(() => import('./pages/Projects'));
 const Publications = lazy(() => import('./pages/Publications'));
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -78,6 +79,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/certifications" element={<Certificates />} />
+              <Route path="/projects" element={<Projects />} />
               <Route path="/publications" element={<Publications />} />
               <Route path="/login" element={<Login />} />
               <Route

@@ -11,12 +11,11 @@ import MessageInbox from '../components/dashboard/MessageInbox';
 import ProjectManager from '../components/dashboard/ProjectManager';
 import ResearchManager from '../components/dashboard/ResearchManager';
 import Sidebar from '../components/dashboard/Sidebar';
-import SkillManager from '../components/dashboard/SkillManager';
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('analytics');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const tabs = ['analytics', 'hero', 'introduction', 'ai', 'research', 'projects', 'experience', 'education', 'certificates', 'skills', 'hobbies', 'messages'];
+  const tabs = ['analytics', 'hero', 'introduction', 'ai', 'research', 'projects', 'experience', 'education', 'certificates', 'hobbies', 'messages'];
 
   const managerByTab = useMemo(
     () => ({
@@ -29,7 +28,6 @@ const Dashboard = () => {
       experience: <ExperienceManager />,
       education: <EducationManager />,
       certificates: <CertificateManager />,
-      skills: <SkillManager />,
       hobbies: <HobbyManager />,
       messages: <MessageInbox />,
     }),

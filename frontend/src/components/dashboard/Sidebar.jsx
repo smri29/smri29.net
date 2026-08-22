@@ -10,7 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Code,
-  Cpu,
   GraduationCap,
   Heart,
   LayoutDashboard,
@@ -33,7 +32,6 @@ const Sidebar = ({ activeTab, setActiveTab, isCollapsed, setIsCollapsed }) => {
     { id: 'experience', label: 'Experience', icon: <Briefcase size={18} /> },
     { id: 'education', label: 'Education', icon: <GraduationCap size={18} /> },
     { id: 'certificates', label: 'Certificates', icon: <Award size={18} /> },
-    { id: 'skills', label: 'Skills', icon: <Cpu size={18} /> },
     { id: 'hobbies', label: 'Interests', icon: <Heart size={18} /> },
     { id: 'messages', label: 'Messages', icon: <Mail size={18} /> },
   ];

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { BookOpenText, Briefcase, Cpu, GraduationCap, Heart, Plus, Sparkles, Trash2 } from 'lucide-react';
+import { BookOpenText, Briefcase, GraduationCap, Heart, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { toast } from 'react-toastify';
 import API from '../../api/axios';
 
@@ -7,7 +7,6 @@ const ICON_OPTIONS = [
   { value: 'education', label: 'Education', icon: GraduationCap },
   { value: 'research', label: 'Research', icon: BookOpenText },
   { value: 'leadership', label: 'Leadership', icon: Briefcase },
-  { value: 'skills', label: 'Skills', icon: Cpu },
   { value: 'interests', label: 'Interests', icon: Heart },
   { value: 'highlight', label: 'Highlight', icon: Sparkles },
 ];
