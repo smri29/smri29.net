@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Award,
   BookOpen,
   Briefcase,
   Calendar,
@@ -15,7 +14,6 @@ import {
   MapPin,
   Smile,
 } from 'lucide-react';
-import { Link as RouterLink } from 'react-router-dom';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
 import About from '../components/About';
@@ -41,8 +39,6 @@ const HEADER_VARIANTS = {
 };
 
 const PROJECT_CATEGORIES = ['AI/ML', 'MERN', 'Flutter', 'Others'];
-const CERT_CATEGORIES = ['AI/ML', 'Kaggle', 'Research', 'Professional', 'Others'];
-const CERTIFICATE_PREVIEW_LIMIT = 3;
 
 const CARD_STAGGER = {
   hidden: { opacity: 0, y: 16 },
@@ -90,29 +86,6 @@ const getExperienceRange = (job) => {
   return job.duration || 'Dates not provided';
 };
 
-const getCategoryAnchor = (category) =>
-  category
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-
-const formatCertificateDate = (value) => {
-  if (!value) {
-    return '';
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
-};
-
 const formatPublicationDate = (value) => {
   if (!value) {
     return '';
@@ -134,7 +107,6 @@ const formatPublicationDate = (value) => {
 const Home = () => {
   const [research, setResearch] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [certificates, setCertificates] = useState([]);
   const [experience, setExperience] = useState([]);
   const [education, setEducation] = useState([]);
   const [hobbies, setHobbies] = useState([]);
@@ -146,10 +118,9 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [researchRes, projectRes, certRes, expRes, educationRes, hobbyRes] = await Promise.all([
+        const [researchRes, projectRes, expRes, educationRes, hobbyRes] = await Promise.all([
           API.get('/data/research'),
           API.get('/data/projects'),
-          API.get('/data/certificates'),
           API.get('/data/experience'),
           API.get('/data/education'),
           API.get('/data/hobbies'),
@@ -157,7 +128,6 @@ const Home = () => {
 
         setResearch(Array.isArray(researchRes.data) ? researchRes.data : []);
         setProjects(Array.isArray(projectRes.data) ? projectRes.data : []);
-        setCertificates(Array.isArray(certRes.data) ? certRes.data : []);
         setExperience(Array.isArray(expRes.data) ? expRes.data : []);
         setEducation(Array.isArray(educationRes.data) ? educationRes.data : []);
         setHobbies(Array.isArray(hobbyRes.data) ? hobbyRes.data : []);
@@ -191,14 +161,6 @@ const Home = () => {
     () => PROJECT_CATEGORIES.filter((category) => (projectsByCategory[category] || []).length > 0),
     [projectsByCategory]
   );
-
-  const certsByCategory = useMemo(() => {
-    return certificates.reduce((acc, item) => {
-      const category = CERT_CATEGORIES.includes(item.category) ? item.category : 'Others';
-      acc[category].push(item);
-      return acc;
-    }, Object.fromEntries(CERT_CATEGORIES.map((category) => [category, []])));
-  }, [certificates]);
 
   const toggleProject = (id) => {
     setExpandedProjects((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -587,89 +549,6 @@ const Home = () => {
         </MotionSection>
 
         <Skills />
-
-        <MotionSection
-          id="certifications"
-          variants={SECTION_VARIANTS}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.15 }}
-          className="section-shell zone-blue border-t border-white/5 px-6 py-24 md:px-8"
-        >
-          <InteractiveNetworkBackground className="absolute inset-0 z-0" />
-          <div className="relative z-10 mx-auto max-w-6xl">
-            <MotionDiv variants={HEADER_VARIANTS} className="mb-10 flex items-center gap-3">
-              <Award className="text-cyan-300" size={28} />
-              <h2 className="section-title">
-                <span className="text-cyan-200">Certifications</span>
-              </h2>
-            </MotionDiv>
-
-            {CERT_CATEGORIES.map((category) => {
-              const items = certsByCategory[category] || [];
-              if (!items.length) return null;
-              const previewItems = items.filter((item) => item.featuredOnHome).slice(0, CERTIFICATE_PREVIEW_LIMIT);
-              if (!previewItems.length) return null;
-
-              return (
-                <MotionDiv
-                  key={category}
-                  variants={CARD_STAGGER}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.15 }}
-                  className="mb-10"
-                >
-                  <div className="mb-5 flex items-center justify-between gap-4">
-                    <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-cyan-200">{category}</h3>
-                    <RouterLink
-                      to={`/certifications#${getCategoryAnchor(category)}`}
-                      onClick={() => trackAnalyticsEvent('click', 'certifications_view_all_click', { category })}
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-800/70 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300 transition hover:border-cyan-300/35 hover:text-cyan-200"
-                    >
-                      View All
-                    </RouterLink>
-                  </div>
-                  <div>
-                    {previewItems.map((item, index) => (
-                      <MotionArticle
-                        key={item._id}
-                        variants={CARD_ITEM}
-                        className={`px-1 py-5 transition duration-300 md:px-2 ${
-                          index !== previewItems.length - 1 ? 'border-b border-white/10' : ''
-                        }`}
-                      >
-                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                          <div className="min-w-0 flex-1">
-                            <h4 className="text-base font-semibold text-slate-100">{item.name}</h4>
-                            <p className="mt-1 text-sm text-cyan-200">{item.issuingOrganization}</p>
-                          </div>
-
-                          <div className="flex items-center gap-3 md:shrink-0">
-                            <span className="inline-flex rounded-full border border-white/10 bg-slate-800/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-300">
-                              {formatCertificateDate(item.issueDate)}
-                            </span>
-                            {item.verificationLink && (
-                              <a
-                                href={item.verificationLink}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-800/70 text-slate-400 transition hover:border-cyan-300/35 hover:text-cyan-200"
-                                aria-label="Verify certificate"
-                              >
-                                <ExternalLink size={15} />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </MotionArticle>
-                    ))}
-                  </div>
-                </MotionDiv>
-              );
-            })}
-          </div>
-        </MotionSection>
 
         <MotionSection
           id="education"

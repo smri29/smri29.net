@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Link as RouterLink } from 'react-router-dom';
 import { Link } from 'react-scroll';
 import { Download, Menu, X } from 'lucide-react';
 import { trackAnalyticsEvent } from '../analytics/tracker';
@@ -18,14 +19,14 @@ const Navbar = () => {
 
   const links = useMemo(
     () => [
-      { name: 'About', to: 'about' },
-      { name: 'Experience', to: 'experience' },
-      { name: 'Projects', to: 'projects' },
-      { name: 'Research', to: 'research' },
-      { name: 'Skills', to: 'skills' },
-      { name: 'Certifications', to: 'certifications' },
-      { name: 'Hobbies', to: 'hobbies' },
-      { name: 'Contact', to: 'contact' },
+      { name: 'About', to: 'about', type: 'scroll' },
+      { name: 'Experience', to: 'experience', type: 'scroll' },
+      { name: 'Projects', to: 'projects', type: 'scroll' },
+      { name: 'Research', to: 'research', type: 'scroll' },
+      { name: 'Skills', to: 'skills', type: 'scroll' },
+      { name: 'Certifications', to: '/certifications', type: 'route' },
+      { name: 'Hobbies', to: 'hobbies', type: 'scroll' },
+      { name: 'Contact', to: 'contact', type: 'scroll' },
     ],
     []
   );
@@ -50,19 +51,29 @@ const Navbar = () => {
         </button>
 
         <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-slate-900/32 px-3 py-2 backdrop-blur-md xl:flex">
-          {links.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              smooth
-              spy
-              offset={-80}
-              className="cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-cyan-300"
-              activeClass="text-cyan-300"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {links.map((link) =>
+            link.type === 'route' ? (
+              <RouterLink
+                key={link.to}
+                to={link.to}
+                className="rounded-full px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-cyan-300"
+              >
+                {link.name}
+              </RouterLink>
+            ) : (
+              <Link
+                key={link.to}
+                to={link.to}
+                smooth
+                spy
+                offset={-80}
+                className="cursor-pointer rounded-full px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5 hover:text-cyan-300"
+                activeClass="text-cyan-300"
+              >
+                {link.name}
+              </Link>
+            )
+          )}
         </div>
 
         <div className="flex items-center gap-3">
@@ -97,21 +108,35 @@ const Navbar = () => {
             className="border-t border-white/10 bg-slate-900/90 px-6 py-5 backdrop-blur-xl xl:hidden"
           >
             <div className="grid gap-4">
-              {links.map((link) => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  smooth
-                  offset={-74}
-                  onClick={() => {
-                    trackAnalyticsEvent('click', 'mobile_nav_section_click', { section: link.to });
-                    setIsOpen(false);
-                  }}
-                  className="cursor-pointer rounded-lg border border-transparent px-3 py-2 text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-200"
-                >
-                  {link.name}
-                </Link>
-              ))}
+              {links.map((link) =>
+                link.type === 'route' ? (
+                  <RouterLink
+                    key={link.to}
+                    to={link.to}
+                    onClick={() => {
+                      trackAnalyticsEvent('click', 'mobile_nav_section_click', { section: 'certifications_page' });
+                      setIsOpen(false);
+                    }}
+                    className="rounded-lg border border-transparent px-3 py-2 text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-200"
+                  >
+                    {link.name}
+                  </RouterLink>
+                ) : (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    smooth
+                    offset={-74}
+                    onClick={() => {
+                      trackAnalyticsEvent('click', 'mobile_nav_section_click', { section: link.to });
+                      setIsOpen(false);
+                    }}
+                    className="cursor-pointer rounded-lg border border-transparent px-3 py-2 text-slate-200 transition hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-200"
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
             </div>
           </MotionDiv>
         )}
