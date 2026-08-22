@@ -5,6 +5,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
 import InteractiveNetworkBackground from '../components/InteractiveNetworkBackground';
+import SiteFooter from '../components/SiteFooter';
 
 const MotionSection = motion.section;
 const MotionArticle = motion.article;
@@ -169,6 +170,8 @@ const Publications = () => {
           )}
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 };

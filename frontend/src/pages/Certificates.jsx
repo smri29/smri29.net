@@ -5,6 +5,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
 import InteractiveNetworkBackground from '../components/InteractiveNetworkBackground';
+import SiteFooter from '../components/SiteFooter';
 
 const MotionSection = motion.section;
 const MotionArticle = motion.article;
@@ -212,6 +213,8 @@ const Certificates = () => {
           )}
         </div>
       </main>
+
+      <SiteFooter />
     </div>
   );
 };

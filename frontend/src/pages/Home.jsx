@@ -22,6 +22,7 @@ import Contact from '../components/Contact';
 import Hero from '../components/Hero';
 import InteractiveNetworkBackground from '../components/InteractiveNetworkBackground';
 import Navbar from '../components/Navbar';
+import SiteFooter from '../components/SiteFooter';
 
 const MotionSection = motion.section;
 const MotionDiv = motion.div;
@@ -506,9 +507,7 @@ const Home = () => {
 
       <ChatWidget />
 
-      <footer className="relative z-20 border-t border-white/10 bg-slate-900/75 px-6 py-10 text-center text-sm text-slate-500">
-        <p>&copy; 2026 Shah Mohammad Rizvi. Built for professional outreach.</p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };
