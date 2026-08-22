@@ -35,6 +35,17 @@ const normalizeImageData = (value) => {
   return normalized.startsWith('data:image/') ? normalized : '';
 };
 
+const buildWhatsAppLink = () => {
+  const rawNumber = normalizeString(
+    process.env.Whatsapp_Number ||
+      process.env.WHATSAPP_NUMBER ||
+      process.env.WHATSAPP_NUMBER_PUBLIC,
+    40
+  );
+  const digitsOnly = rawNumber.replace(/\D/g, '');
+  return digitsOnly ? `https://wa.me/${digitsOnly}` : '';
+};
+
 const parseDate = (value) => {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -223,6 +234,7 @@ const serializeHeroContent = (item) => ({
     item && Object.prototype.hasOwnProperty.call(item, 'summary')
       ? item.summary ?? ''
       : DEFAULT_HERO_CONTENT.summary,
+  whatsappLink: buildWhatsAppLink(),
   updatedAt: item?.updatedAt,
 });
 

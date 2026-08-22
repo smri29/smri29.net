@@ -25,7 +25,7 @@ const {
 router.get('/projects', publicContentCache, getProjects);
 router.get('/research', publicContentCache, getResearch);
 router.get('/certificates', publicContentCache, getCertificates);
-router.get('/hero', publicContentCache, getHeroContent);
+router.get('/hero', noStore, getHeroContent);
 router.get('/introduction', publicContentCache, getIntroduction);
 router.get('/experience', publicContentCache, getExperience); // NEW
 router.get('/education', publicContentCache, getEducation);

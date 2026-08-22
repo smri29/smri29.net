@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Typewriter } from 'react-simple-typewriter';
 import { motion } from 'framer-motion';
 import { Link } from 'react-scroll';
-import { ArrowDown, Brain, Github, Linkedin, Volume2 } from 'lucide-react';
+import { ArrowDown, Brain, Github, Linkedin, MessageCircle, Volume2 } from 'lucide-react';
 import API from '../api/axios';
 import { trackAnalyticsEvent } from '../analytics/tracker';
 import InteractiveNetworkBackground from './InteractiveNetworkBackground';
@@ -15,6 +15,7 @@ const FALLBACK_HERO = {
   roleTitles: ['AI/ML Engineer', 'Researcher', 'Full-Stack Developer', 'Founder, CollabCircle'],
   summary:
     'Building production-grade intelligence systems from model design to deployment. I focus on computer vision, practical deep learning, and reliable web platforms that create measurable impact.',
+  whatsappLink: '',
 };
 
 const Hero = () => {
@@ -38,6 +39,7 @@ const Hero = () => {
             data && Object.prototype.hasOwnProperty.call(data, 'summary')
               ? data.summary ?? ''
               : FALLBACK_HERO.summary,
+          whatsappLink: data?.whatsappLink || '',
         });
       } catch (error) {
         console.error('Failed to load hero content', error);
@@ -175,6 +177,18 @@ const Hero = () => {
               >
                 <Brain size={18} />
               </a>
+              {content.whatsappLink && (
+                <a
+                  href={content.whatsappLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => trackAnalyticsEvent('click', 'hero_social_click', { network: 'whatsapp' })}
+                  className="rounded-full border border-white/15 bg-slate-900/35 p-2.5 text-slate-300 transition hover:-translate-y-0.5 hover:border-cyan-300/60 hover:text-cyan-200"
+                  title="WhatsApp"
+                >
+                  <MessageCircle size={18} />
+                </a>
+              )}
             </div>
           </MotionDiv>
         </div>
