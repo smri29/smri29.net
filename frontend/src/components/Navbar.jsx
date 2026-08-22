@@ -20,8 +20,6 @@ const Navbar = () => {
   const links = useMemo(
     () => [
       { name: 'About', to: 'about', type: 'scroll' },
-      { name: 'Experience', to: 'experience', type: 'scroll' },
-      { name: 'Projects', to: 'projects', type: 'scroll' },
       { name: 'Publications', to: '/publications', type: 'route' },
       { name: 'Certifications', to: '/certifications', type: 'route' },
       { name: 'Hobbies', to: 'hobbies', type: 'scroll' },
