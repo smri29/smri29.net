@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { requireAllowedOrigin, requireTurnstileGate } = require('../middleware/securityMiddleware');
+const { noStore, requireAllowedOrigin, requireTurnstileGate } = require('../middleware/securityMiddleware');
 const {
   registerUser,
   loginUser,
@@ -11,11 +11,11 @@ const {
   logoutUser,
 } = require('../controllers/authController');
 
-router.get('/turnstile/config', getTurnstileConfig);
-router.post('/turnstile/verify', requireAllowedOrigin, verifyTurnstileToken);
-router.get('/me', requireAllowedOrigin, getCurrentUser);
-router.post('/logout', requireAllowedOrigin, protect, logoutUser);
-router.post('/register', requireAllowedOrigin, requireTurnstileGate, registerUser);
-router.post('/login', requireAllowedOrigin, requireTurnstileGate, loginUser);
+router.get('/turnstile/config', noStore, getTurnstileConfig);
+router.post('/turnstile/verify', noStore, requireAllowedOrigin, verifyTurnstileToken);
+router.get('/me', noStore, requireAllowedOrigin, getCurrentUser);
+router.post('/logout', noStore, requireAllowedOrigin, protect, logoutUser);
+router.post('/register', noStore, requireAllowedOrigin, requireTurnstileGate, registerUser);
+router.post('/login', noStore, requireAllowedOrigin, requireTurnstileGate, loginUser);
 
 module.exports = router;

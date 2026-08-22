@@ -31,6 +31,17 @@ const securityHeaders = helmet({
   crossOriginEmbedderPolicy: false,
 });
 
+const setCacheHeaders = (value) => (req, res, next) => {
+  res.set('Cache-Control', value);
+  next();
+};
+
+const publicContentCache = setCacheHeaders(
+  'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+);
+
+const noStore = setCacheHeaders('no-store, max-age=0');
+
 const buildLimiter = ({ windowMs, max, message }) =>
   rateLimit({
     windowMs,
@@ -158,6 +169,8 @@ const requireTurnstileGate = (req, res, next) => {
 
 module.exports = {
   securityHeaders,
+  publicContentCache,
+  noStore,
   authRateLimiter,
   authSessionRateLimiter,
   publicWriteRateLimiter,

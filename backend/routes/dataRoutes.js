@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
-const { publicWriteRateLimiter, adminRateLimiter, requireAllowedOrigin } = require('../middleware/securityMiddleware');
+const {
+    publicContentCache,
+    noStore,
+    publicWriteRateLimiter,
+    adminRateLimiter,
+    requireAllowedOrigin,
+} = require('../middleware/securityMiddleware');
 const { chatWithAI, getAISettings, updateAISettings } = require('../controllers/aiController');
 const {
     getProjects, addProject, updateProject, deleteProject,
@@ -17,50 +23,50 @@ const {
 } = require('../controllers/dataController');
 
 // PUBLIC ROUTES
-router.get('/projects', getProjects);
-router.get('/research', getResearch);
-router.get('/certificates', getCertificates);
-router.get('/hero', getHeroContent);
-router.get('/introduction', getIntroduction);
-router.get('/skills', getSkills);
-router.get('/experience', getExperience); // NEW
-router.get('/education', getEducation);
-router.get('/hobbies', getHobbies);       // NEW
-router.post('/contact', requireAllowedOrigin, publicWriteRateLimiter, sendMessage);
-router.post('/chat', requireAllowedOrigin, publicWriteRateLimiter, chatWithAI);
+router.get('/projects', publicContentCache, getProjects);
+router.get('/research', publicContentCache, getResearch);
+router.get('/certificates', publicContentCache, getCertificates);
+router.get('/hero', publicContentCache, getHeroContent);
+router.get('/introduction', publicContentCache, getIntroduction);
+router.get('/skills', publicContentCache, getSkills);
+router.get('/experience', publicContentCache, getExperience); // NEW
+router.get('/education', publicContentCache, getEducation);
+router.get('/hobbies', publicContentCache, getHobbies);       // NEW
+router.post('/contact', noStore, requireAllowedOrigin, publicWriteRateLimiter, sendMessage);
+router.post('/chat', noStore, requireAllowedOrigin, publicWriteRateLimiter, chatWithAI);
 
 // ADMIN PROTECTED - REORDER
-router.put('/reorder', requireAllowedOrigin, adminRateLimiter, protect, reorderItems);
+router.put('/reorder', noStore, requireAllowedOrigin, adminRateLimiter, protect, reorderItems);
 
 // ADMIN PROTECTED - CRUD
-router.route('/research').post(requireAllowedOrigin, adminRateLimiter, protect, addResearch);
-router.route('/research/:id').put(requireAllowedOrigin, adminRateLimiter, protect, updateResearch).delete(requireAllowedOrigin, adminRateLimiter, protect, deleteResearch);
+router.route('/research').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addResearch);
+router.route('/research/:id').put(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateResearch).delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteResearch);
 
-router.route('/projects').post(requireAllowedOrigin, adminRateLimiter, protect, addProject);
-router.route('/projects/:id').put(requireAllowedOrigin, adminRateLimiter, protect, updateProject).delete(requireAllowedOrigin, adminRateLimiter, protect, deleteProject);
+router.route('/projects').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addProject);
+router.route('/projects/:id').put(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateProject).delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteProject);
 
-router.route('/certificates').post(requireAllowedOrigin, adminRateLimiter, protect, addCertificate);
-router.route('/certificates/:id').put(requireAllowedOrigin, adminRateLimiter, protect, updateCertificate).delete(requireAllowedOrigin, adminRateLimiter, protect, deleteCertificate);
+router.route('/certificates').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addCertificate);
+router.route('/certificates/:id').put(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateCertificate).delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteCertificate);
 
-router.route('/hero').post(requireAllowedOrigin, adminRateLimiter, protect, updateHeroContent);
-router.route('/introduction').post(requireAllowedOrigin, adminRateLimiter, protect, updateIntroduction);
-router.route('/ai-settings').get(requireAllowedOrigin, adminRateLimiter, protect, getAISettings).post(requireAllowedOrigin, adminRateLimiter, protect, updateAISettings);
+router.route('/hero').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateHeroContent);
+router.route('/introduction').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateIntroduction);
+router.route('/ai-settings').get(noStore, requireAllowedOrigin, adminRateLimiter, protect, getAISettings).post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateAISettings);
 
-router.route('/skills').post(requireAllowedOrigin, adminRateLimiter, protect, updateSkills);
-router.route('/skills/:id').delete(requireAllowedOrigin, adminRateLimiter, protect, deleteSkill);
+router.route('/skills').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateSkills);
+router.route('/skills/:id').delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteSkill);
 
 // NEW: EXPERIENCE ROUTES
-router.route('/experience').post(requireAllowedOrigin, adminRateLimiter, protect, addExperience);
-router.route('/experience/:id').put(requireAllowedOrigin, adminRateLimiter, protect, updateExperience).delete(requireAllowedOrigin, adminRateLimiter, protect, deleteExperience);
+router.route('/experience').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addExperience);
+router.route('/experience/:id').put(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateExperience).delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteExperience);
 
-router.route('/education').post(requireAllowedOrigin, adminRateLimiter, protect, addEducation);
-router.route('/education/:id').put(requireAllowedOrigin, adminRateLimiter, protect, updateEducation).delete(requireAllowedOrigin, adminRateLimiter, protect, deleteEducation);
+router.route('/education').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addEducation);
+router.route('/education/:id').put(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateEducation).delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteEducation);
 
 // NEW: HOBBY ROUTES
-router.route('/hobbies').post(requireAllowedOrigin, adminRateLimiter, protect, addHobby);
-router.route('/hobbies/:id').put(requireAllowedOrigin, adminRateLimiter, protect, updateHobby).delete(requireAllowedOrigin, adminRateLimiter, protect, deleteHobby);
+router.route('/hobbies').post(noStore, requireAllowedOrigin, adminRateLimiter, protect, addHobby);
+router.route('/hobbies/:id').put(noStore, requireAllowedOrigin, adminRateLimiter, protect, updateHobby).delete(noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteHobby);
 
-router.get('/messages', requireAllowedOrigin, adminRateLimiter, protect, getMessages);
-router.delete('/messages/:id', requireAllowedOrigin, adminRateLimiter, protect, deleteMessage);
+router.get('/messages', noStore, requireAllowedOrigin, adminRateLimiter, protect, getMessages);
+router.delete('/messages/:id', noStore, requireAllowedOrigin, adminRateLimiter, protect, deleteMessage);
 
 module.exports = router;

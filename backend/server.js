@@ -65,10 +65,14 @@ app.use('/api/data', requireTurnstileGate, require('./routes/dataRoutes'));
 app.use('/api/analytics', analyticsRateLimiter, requireTurnstileGate, require('./routes/analyticsRoutes'));
 
 app.get('/api/health', (req, res) => {
+  res.set('Cache-Control', 'no-store, max-age=0');
   res.status(200).json({ ok: true, uptime: process.uptime() });
 });
 
-app.get('/', (req, res) => res.send('API is running'));
+app.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-store, max-age=0');
+  res.send('API is running');
+});
 
 app.use(notFound);
 app.use(errorHandler);
